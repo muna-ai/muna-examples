@@ -55,7 +55,7 @@ $ python3 tools/source.py       \
   --access-key <access key>
 ```
 
-> [!TIP]
+> [!NOTE]
 > You must have source code access to retrieve generated code. If you would like to request source code access, [reach out to us](mailto:stdin@fxn.ai).
 
 > [!WARNING]
