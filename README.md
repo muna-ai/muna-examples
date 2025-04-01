@@ -42,7 +42,7 @@ $ fxn compile path/to/module.py
 
 The compiler will load the entrypoint function, create a remote sandbox, and compile the function:
 
-![compiling a function](https://fxn.ai/fma.gif)
+![compiling a function](media/fma.gif)
 
 ## Inspecting the Generated Code
 Developers with source code access can download and inspect the generated native code. 
