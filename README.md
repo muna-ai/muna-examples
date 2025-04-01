@@ -61,11 +61,9 @@ $ python3 tools/source.py       \
 > [!WARNING]
 > The generated code is provided for reference and cannot be compiled independently, as it depends on additional scaffolding provided by the Function compiler toolchain.
 
----
-
 ## Useful Links
 - [Discover predictors to use in your apps](https://fxn.ai/explore).
-- [Come scream at us on Discord](https://discord.gg/fxn).
+- [Join our Discord community](https://discord.gg/fxn).
 - [Check out our docs](https://docs.fxn.ai).
 - Learn more about us [on our blog](https://blog.fxn.ai).
 - Reach out to us at [stdin@fxn.ai](mailto:stdin@fxn.ai).
