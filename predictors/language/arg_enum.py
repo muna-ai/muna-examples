@@ -13,8 +13,8 @@ class Direction (IntEnum):
     West = 3
 
 @compile(
-    tag="@yusuf/enum",
-    description="Test enumeration support."
+    tag="@yusuf/arg-enum",
+    description="Test enumeration argument support."
 )
 def direction_to_heading_angle (direction: Direction) -> float:
     """

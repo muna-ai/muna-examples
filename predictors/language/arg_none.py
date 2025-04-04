@@ -9,8 +9,8 @@ def get_pi ():
     return 3.14 # very rough approx
 
 @compile(
-    tag="@yusuf/no-arg",
-    description="Test compiling a function with no arguments."
+    tag="@yusuf/arg-none",
+    description="Test no argument support."
 )
 def compute_two_pi () -> float:
     return 2 * get_pi()
