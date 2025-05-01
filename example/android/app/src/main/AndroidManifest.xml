@@ -3,6 +3,8 @@
   xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools"
 >
+  <uses-feature android:name="android.hardware.camera" />
+  <uses-permission android:name="android.permission.CAMERA" />
   <uses-permission android:name="android.permission.INTERNET" />
   <application
     android:allowBackup="true"
@@ -18,7 +20,6 @@
     <activity
       android:name=".MainActivity"
       android:exported="true"
-      android:label="@string/app_name"
       android:theme="@style/Theme.Predict"
     >
       <intent-filter>
