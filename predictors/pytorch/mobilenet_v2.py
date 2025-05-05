@@ -27,7 +27,7 @@ model.eval()
 @compile(
     tag="@yusuf/mobilenet-v2",
     description="Image classifier trained on ImageNet 1k.",
-    sandbox=Sandbox().pip_install("torch", "torchvision"),
+    sandbox=Sandbox().pip_install("torch==2.6.0", "torchvision==0.21"),
     targets=["android", "macos", "wasm"],
     metadata=[
         CoreMLInferenceMetadata(model=model, model_args=[model_example_input]),
