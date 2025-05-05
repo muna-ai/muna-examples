@@ -1,11 +1,19 @@
 package app.fxn.playground.demos
 
+import ai.fxn.fxn.Function
+import ai.fxn.fxn.types.Image
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
+import android.util.Size
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.OptIn
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ExperimentalGetImage
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -37,15 +45,30 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
+import com.google.common.util.concurrent.ListenableFuture
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
+@OptIn(ExperimentalGetImage::class)
 @Composable
 fun MobileNetv2 (navController: NavController) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-
+    val fxn = Function("<ACCESS KEY>")
+    // Preload the predictor
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            try {
+                fxn.predictions.create("@fxn/greeting", emptyMap())
+            } catch (ex: Exception) {
+                Log.e("Function", "Failed to preload predictor with error: ${ex}")
+            }
+        }
+    }
     // Keep track of the camera permission state
     var hasCameraPermission by remember { mutableStateOf(
         ContextCompat.checkSelfPermission(
@@ -53,57 +76,53 @@ fun MobileNetv2 (navController: NavController) {
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
     ) }
-
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         hasCameraPermission = isGranted
     }
-
     LaunchedEffect(Unit) {
         if (!hasCameraPermission) {
             launcher.launch(Manifest.permission.CAMERA)
         }
     }
+    // Handle preview images
+    val onImage: (ImageProxy) -> Unit = remember {
+        { imageProxy: ImageProxy ->
+            try {
+                val mediaImage = imageProxy.image
+                if (mediaImage != null) {
+                    val image = Image.fromImage(mediaImage)
 
+                } else {
+                    Log.e(
+                        "Function",
+                        "Failed to acquire preview image for timestamp ${imageProxy.imageInfo.timestamp}"
+                    )
+                }
+            } finally {
+                imageProxy.close()
+            }
+        }
+    }
+    // Render the page
     Box(modifier = Modifier.fillMaxSize()) {
         if (hasCameraPermission) {
+            // Camera view
             AndroidView(
                 factory = { ctx ->
                     val previewView = PreviewView(ctx)
-                    val executor = ContextCompat.getMainExecutor(ctx)
-
-                    cameraProviderFuture.addListener({
-                        val cameraProvider = cameraProviderFuture.get()
-
-                        // Preview use case
-                        val preview = Preview.Builder().build().also {
-                            it.surfaceProvider = previewView.surfaceProvider
-                        }
-
-                        // Select back camera
-                        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-                        try {
-                            // Unbind any bound use cases before rebinding
-                            cameraProvider.unbindAll()
-
-                            // Bind use cases to camera
-                            cameraProvider.bindToLifecycle(
-                                lifecycleOwner,
-                                cameraSelector,
-                                preview
-                            )
-                        } catch (e: Exception) {
-                            Log.e("CameraX", "Use case binding failed", e)
-                        }
-                    }, executor)
-
+                    setupCameraPreview(
+                        context = ctx,
+                        lifecycleOwner = lifecycleOwner,
+                        cameraProviderFuture = cameraProviderFuture,
+                        previewView = previewView,
+                        imageHandler = onImage
+                    )
                     previewView
                 },
                 modifier = Modifier.fillMaxSize()
             )
-
             // Add back button in top-left corner
             IconButton(
                 onClick = { navController.popBackStack() },
@@ -142,4 +161,38 @@ fun MobileNetv2 (navController: NavController) {
             }
         }
     }
+}
+
+private fun setupCameraPreview (
+    context: Context,
+    lifecycleOwner: LifecycleOwner,
+    cameraProviderFuture: ListenableFuture<ProcessCameraProvider>,
+    previewView: PreviewView,
+    imageHandler: (ImageProxy) -> Unit
+) {
+    val executor = ContextCompat.getMainExecutor(context)
+    cameraProviderFuture.addListener({
+        // Setup preview
+        val cameraProvider = cameraProviderFuture.get()
+        val preview = Preview.Builder().build().also {
+            it.setSurfaceProvider(previewView.surfaceProvider)
+        }
+        // Setup callback to handle images
+        val imageAnalysis = ImageAnalysis.Builder()
+            .setTargetResolution(Size(1280, 720))
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
+        imageAnalysis.setAnalyzer(executor, imageHandler)
+        try {
+            cameraProvider.unbindAll()
+            cameraProvider.bindToLifecycle(
+                lifecycleOwner,
+                CameraSelector.DEFAULT_BACK_CAMERA,
+                preview
+            )
+        } catch (e: Exception) {
+            Log.e("CameraX", "Use case binding failed", e)
+        }
+    }, executor)
+    Unit
 }

@@ -13,7 +13,7 @@
 # ///
 
 from fxn import compile, Sandbox
-from fxn.beta import CoreMLInferenceMetadata, ONNXInferenceMetadata
+from fxn.beta import CoreMLInferenceMetadata, LiteRTInferenceMetadata, ONNXInferenceMetadata
 from PIL import Image
 from torch import argmax, inference_mode, softmax, randn
 from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
@@ -28,9 +28,11 @@ model.eval()
     tag="@yusuf/mobilenet-v2",
     description="Image classifier trained on ImageNet 1k.",
     sandbox=Sandbox().pip_install("torch", "torchvision"),
+    targets=["android", "macos", "wasm"],
     metadata=[
-        CoreMLInferenceMetadata(model=model, model_args=(model_example_input,)),
-        ONNXInferenceMetadata(model=model, model_args=(model_example_input,))
+        CoreMLInferenceMetadata(model=model, model_args=[model_example_input]),
+        LiteRTInferenceMetadata(model=model, model_args=[model_example_input]),
+        ONNXInferenceMetadata(model=model, model_args=[model_example_input]),
     ]
 )
 @inference_mode()
