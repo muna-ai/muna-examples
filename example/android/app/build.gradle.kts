@@ -62,6 +62,7 @@ dependencies {
 fxn {
     accessKey = "<ACCESS KEY>"
     embeds.addAll(
-        FunctionEmbed(tag = "@fxn/greeting")
+        FunctionEmbed(tag = "@fxn/greeting"),
+        FunctionEmbed(tag = "@yusuf/mobilenet")
     )
 }
