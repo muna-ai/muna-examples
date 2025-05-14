@@ -7,22 +7,22 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "fxn",
+#     "rich",
 #     "torch",
 #     "torchvision",
 # ]
 # ///
 
 from fxn import compile, Sandbox
-from fxn.beta import CoreMLInferenceMetadata, LiteRTInferenceMetadata, ONNXInferenceMetadata
+from fxn.beta import ONNXInferenceMetadata
 from PIL import Image
 from torch import argmax, inference_mode, softmax, randn
 from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
 from torchvision.transforms import functional as F
 
 weights = MobileNet_V2_Weights.DEFAULT
-model = mobilenet_v2(weights=weights)
+model = mobilenet_v2(weights=weights).eval()
 model_example_input = randn(1, 3, 224, 224) # used to lower the model during compilation
-model.eval()
 
 @compile(
     tag="@yusuf/mobilenet-v2",
@@ -30,8 +30,6 @@ model.eval()
     sandbox=Sandbox().pip_install("torch==2.6.0", "torchvision==0.21"),
     targets=["android", "macos", "wasm"],
     metadata=[
-        CoreMLInferenceMetadata(model=model, model_args=[model_example_input]),
-        LiteRTInferenceMetadata(model=model, model_args=[model_example_input]),
         ONNXInferenceMetadata(model=model, model_args=[model_example_input]),
     ]
 )
@@ -60,5 +58,6 @@ def predict (image: Image.Image) -> tuple[str, float]:
     return label, score
 
 if __name__ == "__main__":
+    import rich
     image = Image.open("./media/cat.jpg")
-    print(predict(image))
+    rich.print(predict(image))

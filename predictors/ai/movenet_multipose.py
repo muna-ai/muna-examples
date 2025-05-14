@@ -1,0 +1,159 @@
+#
+#   Function
+#   Copyright © 2025 NatML Inc. All Rights Reserved.
+#
+
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "fxn",
+#     "onnxruntime",
+#     "rich",
+#     "torchvision",
+# ]
+# ///
+
+from fxn import compile, Sandbox
+from numpy import array, ndarray
+from onnxruntime import InferenceSession
+from pathlib import Path
+from PIL import Image
+from pydantic import BaseModel, Field
+from torchvision.transforms.v2 import functional as F
+
+class Rect (BaseModel):
+    x: float = Field(description="Normalized minimum point X coordinate.")
+    y: float = Field(description="Normalized minimum point Y coordinate.")
+    width: float = Field(description="Normalized width.")
+    height: float = Field(description="Normalized height.")
+
+class Keypoint (BaseModel):
+    x: float = Field("Normalized X position.")
+    y: float = Field("Normalized Y position.")
+    score: float = Field("Confidence score in range [0, 1].")
+
+class Pose (BaseModel):
+    score: float = Field(description="Pose confidence score in range [0, 1].")
+    rect: Rect = Field(description="Detected person normalized bounding (x_min,y_min,x_max,y_max) rectangle.")
+    nose: Keypoint = Field(description="Nose normalized coordinates and score.")
+    left_eye: Keypoint = Field(
+        description="Left eye normalized coordinates and score.",
+        serialization_alias="leftEye",
+    )
+    right_eye: Keypoint = Field(
+        description="Right eye normalized coordinates and score.",
+        serialization_alias="rightEye",
+    )
+    left_ear: Keypoint = Field(
+        description="Left ear normalized coordinates and score.",
+        serialization_alias="leftEar",
+    )
+    right_ear: Keypoint = Field(
+        description="Right ear normalized coordinates and score.",
+        serialization_alias="rightEar",
+    )
+    left_shoulder: Keypoint = Field(
+        description="Left shoulder normalized coordinates and score.",
+        serialization_alias="leftShoulder",
+    )
+    right_shoulder: Keypoint = Field(
+        description="Right shoulder normalized coordinates and score.",
+        serialization_alias="rightShoulder",
+    )
+    left_elbow: Keypoint = Field(
+        description="Left elbow normalized coordinates and score.",
+        serialization_alias="leftElbow",
+    )
+    right_elbow: Keypoint = Field(
+        description="Right elbow normalized coordinates and score.",
+        serialization_alias="rightElbow",
+    )
+    left_wrist: Keypoint = Field(
+        description="Left wrist normalized coordinates and score.",
+        serialization_alias="leftWrist",
+    )
+    right_wrist: Keypoint = Field(
+        description="Right wrist normalized coordinates and score.",
+        serialization_alias="rightWrist",
+    )
+    left_hip: Keypoint = Field(
+        description="Left hip normalized coordinates and score.",
+        serialization_alias="leftHip"
+    )
+    right_hip: Keypoint = Field(
+        description="Right hip normalized coordinates and score.",
+        serialization_alias="rightHip"
+    )
+    left_knee: Keypoint = Field(
+        description="Left knee normalized coordinates and score.",
+        serialization_alias="leftKnee"
+    )
+    right_knee: Keypoint = Field(
+        description="Right knee normalized coordinates and score.",
+        serialization_alias="rightKnee"
+    )
+    left_ankle: Keypoint = Field(
+        description="Left ankle normalized coordinates and score.",
+        serialization_alias="leftAnkle",
+    )
+    right_ankle: Keypoint = Field(
+        description="Right ankle normalized coordinates and score.",
+        serialization_alias="rightAnkle"
+    )
+
+model_path = Path("test/models/movenet-multipose-192-fp32.onnx")
+model = InferenceSession(model_path.name if not model_path.exists() else model_path)
+
+def _parse_pose (data: ndarray) -> Pose:
+    """
+    Parse a pose vector with shape (56,)
+    """
+    KEYPOINTS = [
+        "nose", "left_eye", "right_eye", "left_ear", "right_ear",
+        "left_shoulder", "right_shoulder", "left_elbow", "right_elbow",
+        "left_wrist", "right_wrist", "left_hip", "right_hip", "left_knee",
+        "right_knee", "left_ankle", "right_ankle"
+    ]
+    pose_dict = {
+        "score": data[55],
+        "rect": {
+            "x": data[52],
+            "y": data[51],
+            "width": data[54],
+            "height": data[53]
+        }
+    }
+    for idx, keypoint in enumerate(KEYPOINTS):
+        kp_x = data[3 * idx + 1]
+        kp_y = data[3 * idx]
+        kp_score = data[3 * idx + 2]
+        pose_dict[keypoint] = { "x": kp_x, "y": kp_y, "score": kp_score }
+    return Pose(**pose_dict)
+
+@compile(
+    tag="@yusuf/movenet-multipose",
+    description="Detect human poses in an image.",
+    sandbox=Sandbox()
+        .pip_install("onnxruntime", "torchvision")
+        .upload_file(model_path)
+)
+def detect_poses (image: Image.Image, min_score: float=0.3) -> list[Pose]:
+    # Preprocess image
+    image_rgb = image.convert("RGB")
+    image_resized = F.resize(image_rgb, [192, 192])
+    image_tensor = array(image_resized).astype("float32")
+    image_tensor_batch = image_tensor[None]
+    # Run model
+    logits = model.run(None, { "input": image_tensor_batch })[0] # (1,6,56)
+    # Parse poses
+    valid_pose_mask = logits[0,:,55] >= min_score
+    valid_pose_data = logits[0,valid_pose_mask] # (N,56)
+    poses = [_parse_pose(data) for data in valid_pose_data]
+    # Return
+    return poses
+
+if __name__ == "__main__":
+    import rich
+    image = Image.open("test/media/runner.jpg")
+    poses = detect_poses(image)
+    rich.print_json(data=[pose.model_dump() for pose in poses])
