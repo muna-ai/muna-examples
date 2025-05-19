@@ -14,6 +14,7 @@
 # ///
 
 from fxn import compile, Sandbox
+from fxn.beta import ONNXRuntimeInferenceSessionMetadata
 from numpy import array, ndarray
 from onnxruntime import InferenceSession
 from pathlib import Path
@@ -135,7 +136,10 @@ def _parse_pose (data: ndarray) -> Pose:
     description="Detect human poses in an image.",
     sandbox=Sandbox()
         .pip_install("onnxruntime", "torchvision")
-        .upload_file(model_path)
+        .upload_file(model_path),
+    metadata=[
+        ONNXRuntimeInferenceSessionMetadata(session=model, model_path=model_path.name)
+    ]
 )
 def detect_poses (image: Image.Image, min_score: float=0.3) -> list[Pose]:
     # Preprocess image
