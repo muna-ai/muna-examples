@@ -6,7 +6,7 @@
 from fxn import compile
 
 @compile(
-    tag="@yusuf/list-comprehension",
+    tag="@fxn/list-comprehension",
     description="Test list comprehension support."
 )
 def predict (count: int) -> list:
