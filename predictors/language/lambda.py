@@ -5,11 +5,11 @@
 
 from fxn import compile
 
-# Function currently does not support lambda expressions.
+# Function currently has partial support for lambda expressions.
 # We can trace through lambdas, and even lower calls to lambdas. The challenge is in treating them as objects.
 # In Python, you can pass around a lambda, add it to a list, add arbitrary attributes, and so on.
-# In native code, we can only make a lambda concrete by attaching types to it. But what types do we use?
-# Hence for now, we don't support lambdas--not even partially.
+# In native code, we can only make a lambda concrete by attaching types to it.
+# Hence for now we support invoking lambdas, but not treating them as plain objects.
 
 @compile(
     tag="@yusuf/lambda",
