@@ -14,7 +14,7 @@
 # ///
 
 from fxn import compile, Sandbox
-from fxn.beta import ONNXInferenceMetadata
+from fxn.beta import OnnxInferenceMetadata
 from PIL import Image
 from torch import argmax, inference_mode, softmax, randn
 from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
@@ -30,7 +30,7 @@ model_example_input = randn(1, 3, 224, 224) # used to lower the model during com
     sandbox=Sandbox().pip_install("torch==2.6.0", "torchvision==0.21"),
     targets=["android", "macos", "wasm"],
     metadata=[
-        ONNXInferenceMetadata(model=model, model_args=[model_example_input]),
+        OnnxInferenceMetadata(model=model, model_args=[model_example_input]),
     ]
 )
 @inference_mode()
