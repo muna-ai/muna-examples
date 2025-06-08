@@ -22,7 +22,6 @@ from torchvision.transforms import functional as F
 
 weights = MobileNet_V2_Weights.DEFAULT
 model = mobilenet_v2(weights=weights).eval()
-model_example_input = randn(1, 3, 224, 224) # used to lower the model during compilation
 
 @compile(
     tag="@yusuf/mobilenet-v2",
@@ -30,7 +29,10 @@ model_example_input = randn(1, 3, 224, 224) # used to lower the model during com
     sandbox=Sandbox().pip_install("torch==2.6.0", "torchvision==0.21"),
     targets=["android", "macos", "wasm"],
     metadata=[
-        OnnxInferenceMetadata(model=model, model_args=[model_example_input]),
+        OnnxInferenceMetadata(
+            model=model,
+            model_args=[randn(1, 3, 224, 224)]
+        ),
     ]
 )
 @inference_mode()
