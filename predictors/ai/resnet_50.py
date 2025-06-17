@@ -16,34 +16,37 @@
 from fxn import compile, Sandbox
 from fxn.beta import OnnxInferenceMetadata
 from PIL import Image
-from torch import argmax, inference_mode, softmax, randn
-from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
+from torch import argmax, randn, softmax
+from torchvision.models import resnet50, ResNet50_Weights
 from torchvision.transforms import functional as F
 
-weights = MobileNet_V2_Weights.DEFAULT
-model = mobilenet_v2(weights=weights).eval()
+weights = ResNet50_Weights.DEFAULT
+model = resnet50(weights=weights).eval()
 
 @compile(
-    tag="@pytorch/mobilenet-v2",
-    description="Image classifier trained on ImageNet 1k.",
-    sandbox=Sandbox().pip_install("torch==2.6.0", "torchvision==0.21"),
-    targets=["android", "macos", "wasm"],
+    tag="@pytorch/resnet-50",
+    description="Deep residual learning for image recognition.",
+    targets=["android", "ios", "macos", "wasm"],
+    sandbox=Sandbox().pip_install("torch", "torchvision"),
     metadata=[
         OnnxInferenceMetadata(
             model=model,
-            model_args=[randn(1, 3, 224, 224)]
+            model_args=[randn(1, 3, 256, 256)]
         ),
-    ]
+    ],
+    access="unlisted"
 )
-@inference_mode()
-def predict (image: Image.Image) -> tuple[str, float]:
+def predict(image: Image.Image) -> tuple[str, float]:
     """
     Classify an image.
+
+    Returns:
+        tuple[str, float]: Predicted label along with normalized score.
     """
     # Preprocess
     image = image.convert("RGB")
-    image = F.resize(image, 224)
-    image = F.center_crop(image, 224)
+    image = F.resize(image, 256)
+    image = F.center_crop(image, 256)
     image_tensor = F.to_tensor(image)
     normalized_tensor = F.normalize(
         image_tensor,
@@ -55,13 +58,13 @@ def predict (image: Image.Image) -> tuple[str, float]:
     # Postprocess
     scores = softmax(logits, dim=1)
     idx = argmax(scores, dim=1)
-    score = scores[0,idx].item()
+    score = scores[0, idx].item()
     label = weights.meta["categories"][idx]
     # Return
     return label, score
 
 if __name__ == "__main__":
     import rich
-    image = Image.open("./media/cat.jpg")
+    image = Image.open("test/media/cat.jpg")
     label, score = predict(image)
     rich.print(label, score)
