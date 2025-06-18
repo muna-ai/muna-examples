@@ -26,7 +26,11 @@ model = mobilenet_v2(weights=weights).eval()
 @compile(
     tag="@pytorch/mobilenet-v2",
     description="Image classifier trained on ImageNet 1k.",
-    sandbox=Sandbox().pip_install("torch==2.6.0", "torchvision==0.21"),
+    sandbox=Sandbox().pip_install(
+        "torch==2.6.0",
+        "torchvision==0.21",
+        index_url="https://download.pytorch.org/whl/cpu"
+    ),
     metadata=[
         OnnxInferenceMetadata(
             model=model,

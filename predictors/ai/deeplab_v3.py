@@ -16,7 +16,11 @@ model = deeplabv3_resnet50(weights=weights).eval()
 @compile(
     tag="@google/deeplab-v3",
     description="Semantic image segmentation with atrous convolutions.",
-    sandbox=Sandbox().pip_install("torch==2.6.0", "torchvision==0.21"),
+    sandbox=Sandbox().pip_install(
+        "torch==2.6.0",
+        "torchvision==0.21",
+        index_url="https://download.pytorch.org/whl/cpu"
+    ),
     metadata=[
         OnnxInferenceMetadata(
             model=model,

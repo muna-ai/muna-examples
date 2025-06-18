@@ -26,7 +26,11 @@ model = resnet50(weights=weights).eval()
 @compile(
     tag="@pytorch/resnet-50",
     description="Deep residual learning for image recognition.",
-    sandbox=Sandbox().pip_install("torch==2.6.0", "torchvision==0.21"),
+    sandbox=Sandbox().pip_install(
+        "torch==2.6.0",
+        "torchvision==0.21",
+        index_url="https://download.pytorch.org/whl/cpu"
+    ),
     metadata=[
         OnnxInferenceMetadata(
             model=model,
