@@ -135,7 +135,8 @@ def _parse_pose (data: ndarray) -> Pose:
     tag="@yusuf/movenet-multipose",
     description="Detect human poses in an image.",
     sandbox=Sandbox()
-        .pip_install("onnxruntime", "torchvision")
+        .pip_install("onnxruntime")
+        .pip_install("torchvision", index_url="https://download.pytorch.org/whl/cpu")
         .upload_file(model_path),
     metadata=[
         ONNXRuntimeInferenceSessionMetadata(session=model, model_path=model_path.name)

@@ -17,7 +17,7 @@ model = convnext_base(weights=weights).eval()
     tag="@pytorch/convnext",
     description="Image classification entirely using standard ConvNet modules.",
     access="public",
-    sandbox=Sandbox().pip_install("torch", "torchvision"),
+    sandbox=Sandbox().pip_install("torchvision", index_url="https://download.pytorch.org/whl/cpu"),
     metadata=[
         OnnxInferenceMetadata(
             model=model,

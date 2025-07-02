@@ -25,7 +25,7 @@ model = resnet50(weights=weights).eval()
 
 @compile(
     tag="@pytorch/resnet-50",
-    description="Deep residual learning for image recognition.",
+    description="Classify an image with ResNet-50.",
     sandbox=Sandbox().pip_install(
         "torch==2.6.0",
         "torchvision==0.21",
@@ -41,10 +41,11 @@ model = resnet50(weights=weights).eval()
 )
 def predict(image: Image.Image) -> tuple[str, float]:
     """
-    Classify an image.
+    Classify an image with ResNet-50.
 
     Returns:
-        tuple[str, float]: Predicted label along with normalized score.
+        str: Classification label.
+        float: Classification score.
     """
     # Preprocess
     image = image.convert("RGB")

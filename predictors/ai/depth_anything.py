@@ -84,13 +84,13 @@ def colorize_depth (depth_tensor: Tensor) -> Image.Image:
 @compile(
     tag="@tiktok/depth-anything",
     description="Depth estimation using Depth Anything model.",
-    sandbox=Sandbox().pip_install(
-        "torch==2.6.0",
-        "torchvision==0.21",
-        "opencv-python-headless",
-        "huggingface_hub==0.17.3",
-        index_url="https://download.pytorch.org/whl/cpu"
-    ),
+    sandbox=Sandbox()
+        .pip_install(
+            "torch==2.6.0",
+            "torchvision==0.21",
+            index_url="https://download.pytorch.org/whl/cpu"
+        )
+        .pip_install("opencv-python-headless", "huggingface_hub==0.17.3"),
     access="unlisted"
 )
 @inference_mode()
