@@ -32,5 +32,15 @@ $ fxn compile --overwrite predictors/ai/object-detection/yolo_v8_nano.py
 ```
 
 Function will generate and compile self-contained native code (C++, Rust, etc) that runs the object detection function.
-Once compiled, you can run this function on any device using our client libraries. 
+
+## Running the Predictor
+Once compiled, you can run the predictor on any device using our client libraries. For example, run the predictor in 
+the command line:
+```bash
+# Run this in Terminal
+$ fxn predict @<YOUR FUNCTION USERNAME>/yolo-v8-nano --image @./path/to/image.jpg
+```
+
+Function compiles predictors to run on Android, iOS, macOS, Linux, visionOS, WebAssembly, and Windows. We provide
+client libraries to run these predictors for JavaScript, Kotlin, Android, React Native, Unity, and more.
 [Learn more](https://docs.fxn.ai/predictions/create).
