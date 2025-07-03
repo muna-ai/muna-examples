@@ -1,44 +1,44 @@
-# Object Detection Predictors
-This folder contains a few predictors that detect images within an image using popular object detection models.
+# Image Classification Predictors
+This folder contains a few predictors that classify images using popular image classification models.
 
-## Running a Detection Sample
+## Running a Classification Sample
 The first step is to run the prediction function directly. First, we recommend installing [uv](https://docs.astral.sh/uv/getting-started/installation/) as it simplifies working with Python dependencies. Once `uv` is installed, you can run 
-any of the object detection predictors by simply executing the script directly:
+any of the image classification predictors by simply executing the script directly:
 ```bash
 # Run this in Terminal
-$ uv run predictors/ai/object-detection/yolo_v8_nano.py
+$ uv run predictors/ai/image-classification/resnet_50.py
 ```
 
 `uv` will automatically install any required Python packages then run the script.
 
 ## Compiling the Predictor with Function
-Once you have chosen an object detection predictor to use in your application, first update the predictor tag of the 
-detection function with your Function username:
+Once you have chosen an image classification predictor to use in your application, first update the predictor tag of the 
+classification function with your Function username:
 ```diff
 # Define predictor
 @compile(
--   tag="@ultralytics/yolo-v8-nano",
-+   tag="@<YOUR FUNCTION USERNAME>/yolo-v8-nano",
+-   tag="@pytorch/resnet-50",
++   tag="@<YOUR FUNCTION USERNAME>/resnet-50",
     ...
 )
-def detect_objects(...) -> list[Detection]:
+def classify(...) -> tuple[str, float]:
     ...
 ```
 
 Next, compile the Python code with Function:
 ```bash
 # Run this in Terminal
-$ fxn compile --overwrite predictors/ai/object-detection/yolo_v8_nano.py
+$ fxn compile --overwrite predictors/ai/image-classification/resnet_50.py
 ```
 
-Function will generate and compile self-contained native code (C++, Rust, etc) that runs the object detection function.
+Function will generate and compile self-contained native code (C++, Rust, etc) that runs the image classification function.
 
 ## Running the Predictor
 Once compiled, you can run the predictor on any device using our client libraries. For example, run the predictor in 
 the command line:
 ```bash
 # Run this in Terminal
-$ fxn predict @<YOUR FUNCTION USERNAME>/yolo-v8-nano --image @./path/to/image.jpg
+$ fxn predict @<YOUR FUNCTION USERNAME>/resnet-50 --image @./path/to/image.jpg
 ```
 
 Function compiles predictors to run on Android, iOS, macOS, Linux, visionOS, WebAssembly, and Windows. We provide

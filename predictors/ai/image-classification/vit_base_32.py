@@ -3,6 +3,15 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "fxn",
+#     "rich",
+#     "torchvision",
+# ]
+# ///
+
 from fxn import compile, Sandbox
 from fxn.beta import OnnxInferenceMetadata
 from PIL import Image

@@ -8,7 +8,6 @@
 # dependencies = [
 #     "fxn",
 #     "rich",
-#     "torch",
 #     "torchvision",
 # ]
 # ///
