@@ -45,6 +45,6 @@ def predict (image: Image.Image) -> tuple[str, float]:
     return output_tensor
 
 if __name__ == "__main__":
-    image = Image.open("test/media/runner.jpg")
+    image = Image.open("media/runner.jpg")
     result = predict(image)
     print(result)

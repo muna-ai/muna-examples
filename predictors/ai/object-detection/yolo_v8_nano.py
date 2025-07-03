@@ -34,7 +34,8 @@ class Detection(BaseModel):
 
 # Instantiate model
 yolo = YOLO("yolov8n.pt")
-model: Module = yolo.model.eval()
+model: Module = yolo.model
+model.eval()
 labels: dict[int, str] = model.names
 
 # Define predictor
@@ -72,18 +73,15 @@ def detect_objects(
         list: Detected objects.
     """
     # Preprocess
-    image = image.convert("RGB")
-    image = F.resize(image, 640)
-    image = F.center_crop(image, 640)
-    image_tensor = F.to_tensor(image)
+    image_tensor, scale_factors = _preprocess_image(image, input_size=640)
     # Run model
     model_outputs = model(image_tensor[None])
     # Extract components
-    logits: Tensor = model_outputs[0]               # (1,84,8400)
-    predictions = logits[0].T                       # (8400,84)
-    boxes_cxcywh = predictions[:,:4] / 640          # (8400,4)
-    class_scores = predictions[:,4:]                # (8400,80)
-    max_scores, class_ids = class_scores.max(dim=1) # (8400,), (8400,)
+    logits: Tensor = model_outputs[0]                   # (1,84,8400)
+    predictions = logits[0].T                           # (8400,84)
+    boxes_cxcywh = predictions[:,:4] * scale_factors    # (8400,4)
+    class_scores = predictions[:,4:]                    # (8400,80)
+    max_scores, class_ids = class_scores.max(dim=1)     # (8400,), (8400,)
     # Filter by score
     confidence_mask = max_scores >= min_confidence
     filtered_boxes = boxes_cxcywh[confidence_mask]
@@ -116,6 +114,30 @@ def detect_objects(
     ]
     # Return
     return detections
+
+def _preprocess_image(
+    image: Image.Image,
+    *,
+    input_size: int
+) -> tuple[Tensor, Tensor]:
+    """
+    Preprocess an image for inference by downscaling and padding it to have a square aspect.
+    """
+    # Compute scaled size and padding
+    image_width, image_height = image.size
+    ratio = min(input_size / image_width, input_size / image_height)
+    scaled_width = int(image_width * ratio)
+    scaled_height = int(image_height * ratio)
+    image_padding = [0, 0, input_size - scaled_width, input_size - scaled_height]
+    # Downscale and pad image
+    image = image.convert("RGB")
+    image = F.resize(image, [scaled_height, scaled_width])
+    image = F.pad(image, image_padding, fill=114)
+    # Create tensors
+    image_tensor = F.to_tensor(image)
+    scaled_sizes = tensor([scaled_width, scaled_height, scaled_width, scaled_height])
+    # Return
+    return image_tensor, scaled_sizes.reciprocal()
 
 def _create_detection(
     box: Tensor,
@@ -165,7 +187,7 @@ def _render_detections(
 if __name__ == "__main__":
     from rich import print_json
     # Detect objects
-    image = Image.open("test/media/vehicles_square.jpg")
+    image = Image.open("media/vehicles.jpg")
     detections = detect_objects(image)
     # Print detections
     print_json(data=[det.model_dump() for det in detections])

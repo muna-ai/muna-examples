@@ -25,7 +25,8 @@ from torchvision.transforms import functional as F
 from torchvision.utils import draw_bounding_boxes
 
 # Instantiate model
-model: Module = load("Megvii-BaseDetection/YOLOX", "yolox_nano").eval()
+model: Module = load("Megvii-BaseDetection/YOLOX", "yolox_nano")
+model.eval()
 INPUT_SIZE = 320
 
 # Get COCO detection labels
@@ -71,15 +72,11 @@ def detect_objects(
         list: Detected objects.
     """
     # Preprocess image
-    image = image.convert("RGB")
-    image = F.resize(image, INPUT_SIZE)
-    image = F.center_crop(image, INPUT_SIZE)
-    image_tensor = F.pil_to_tensor(image).float()
+    image_tensor, scale_factors = _preprocess_image(image, input_size=INPUT_SIZE)
     # Run model
-    image_batch = image_tensor[None]
-    logits: Tensor = model(image_batch)
+    logits: Tensor = model(image_tensor[None])
     # Parse boxes
-    boxes_cxcywh = logits[0,:,:4] / INPUT_SIZE
+    boxes_cxcywh = logits[0,:,:4] * scale_factors
     box_scores = logits[0,:,4,]
     class_logits = logits[0,:,5:]
     class_scores, class_ids = class_logits.max(dim=1)
@@ -115,6 +112,30 @@ def detect_objects(
     ]
     # Return
     return detections
+
+def _preprocess_image(
+    image: Image.Image,
+    *,
+    input_size: int
+) -> tuple[Tensor, Tensor]:
+    """
+    Preprocess an image for inference by downscaling and padding it to have a square aspect.
+    """
+    # Compute scaled size and padding
+    image_width, image_height = image.size
+    ratio = min(input_size / image_width, input_size / image_height)
+    scaled_width = int(image_width * ratio)
+    scaled_height = int(image_height * ratio)
+    image_padding = [0, 0, input_size - scaled_width, input_size - scaled_height]
+    # Downscale and pad image
+    image = image.convert("RGB")
+    image = F.resize(image, [scaled_height, scaled_width])
+    image = F.pad(image, image_padding, fill=114)
+    # Create tensors
+    image_tensor = F.pil_to_tensor(image).float()
+    scaled_sizes = tensor([scaled_width, scaled_height, scaled_width, scaled_height])
+    # Return
+    return image_tensor, scaled_sizes.reciprocal()
 
 def _create_detection(
     box: Tensor,
@@ -164,8 +185,8 @@ def _render_detections(
 if __name__ == "__main__":
     from rich import print_json
     # Detect objects
-    image = Image.open("test/media/vehicles_square.jpg")
-    detections = detect_objects(image)
+    image = Image.open("media/vehicles.png")
+    detections = detect_objects(image, min_confidence=0.2)
     # Print detections
     print_json(data=[det.model_dump() for det in detections])
     # Show annotated image

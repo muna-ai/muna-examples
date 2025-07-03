@@ -55,6 +55,6 @@ def classify(image: Image.Image) -> tuple[str, float]:
     return label, score
 
 if __name__ == "__main__":
-    image = Image.open(f"test/media/cat.jpg")
+    image = Image.open(f"media/cat.jpg")
     label, score = classify(image)
     print(label, score)

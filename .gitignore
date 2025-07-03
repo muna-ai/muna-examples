@@ -15,6 +15,17 @@ dist/
 *.env
 !.env.example
 
+# Models
+*.mlmodel
+*.onnx
+*.pt
+*.pth
+*.tflite
+*.mlpackage
+*.mlpackage.zip
+*.dlc
+*.gguf
+
 # Images
 *.png
 *.jpg

@@ -71,6 +71,6 @@ def classify(image: Image.Image) -> tuple[str, float]:
 
 if __name__ == "__main__":
     import rich
-    image = Image.open("./media/cat.jpg")
+    image = Image.open("media/cat.jpg")
     label, score = classify(image)
     rich.print(label, score)
