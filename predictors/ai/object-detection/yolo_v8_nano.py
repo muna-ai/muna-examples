@@ -40,7 +40,7 @@ labels: dict[int, str] = model.names
 
 # Define predictor
 @compile(
-    tag="@anon/yolo-v8-nano",
+    tag="@ultralytics/yolo-v8-nano",
     description="Detect objects in an image with YOLO-v8 (nano).",
     access="private", # YOLO-v8 is under AGPL license
     sandbox=Sandbox()
