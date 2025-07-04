@@ -7,7 +7,12 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "fxn",
+#     "loguru",
+#     "opencv-python-headless",
+#     "packaging",
+#     "psutil",
 #     "rich",
+#     "tabulate",
 #     "torchvision"
 # ]
 # ///
@@ -33,7 +38,7 @@ class Detection (BaseModel):
     confidence: float = Field(description="Detection confidence score.")
 
 # Instantiate model
-model: Module = load("Megvii-BaseDetection/YOLOX", "yolox_nano")
+model: Module = load("Megvii-BaseDetection/YOLOX", "yolox_nano", trust_repo=True)
 model.eval()
 INPUT_SIZE = 320
 
@@ -45,7 +50,9 @@ labels = [label for label in labels if label not in ("__background__", "N/A")]
     tag="@megvii/yolox-nano",
     description="Detect objects in an image with YOLOX (nano).",
     access="public",
-    sandbox=Sandbox().pip_install("torchvision", index_url="https://download.pytorch.org/whl/cpu"),
+    sandbox=Sandbox()
+        .pip_install("torchvision", index_url="https://download.pytorch.org/whl/cpu")
+        .pip_install("loguru", "opencv-python-headless", "psutil", "tabulate"),
     metadata=[
         OnnxInferenceMetadata(
             model=model,
@@ -185,7 +192,7 @@ def _render_detections(
 if __name__ == "__main__":
     from rich import print_json
     # Detect objects
-    image = Image.open("media/vehicles.png")
+    image = Image.open("media/vehicles.jpg")
     detections = detect_objects(image, min_confidence=0.2)
     # Print detections
     print_json(data=[det.model_dump() for det in detections])
