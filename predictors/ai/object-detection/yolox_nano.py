@@ -24,6 +24,14 @@ from torchvision.ops import nms, box_convert
 from torchvision.transforms import functional as F
 from torchvision.utils import draw_bounding_boxes
 
+class Detection (BaseModel):
+    x_center: float = Field(description="Normalized bounding box center X-coordinate.")
+    y_center: float = Field(description="Normalized bounding box center Y-coordinate.")
+    width: float = Field(description="Normalized bounding box width.")
+    height: float = Field(description="Normalized bounding box height.")
+    label: str = Field(description="Detection label.")
+    confidence: float = Field(description="Detection confidence score.")
+
 # Instantiate model
 model: Module = load("Megvii-BaseDetection/YOLOX", "yolox_nano")
 model.eval()
@@ -32,14 +40,6 @@ INPUT_SIZE = 320
 # Get COCO detection labels
 labels = FasterRCNN_ResNet50_FPN_Weights.COCO_V1.meta["categories"]
 labels = [label for label in labels if label not in ("__background__", "N/A")]
-
-class Detection (BaseModel):
-    x_center: float = Field(description="Normalized bounding box center X-coordinate.")
-    y_center: float = Field(description="Normalized bounding box center Y-coordinate.")
-    width: float = Field(description="Normalized bounding box width.")
-    height: float = Field(description="Normalized bounding box height.")
-    label: str = Field(description="Detection label.")
-    confidence: float = Field(description="Detection confidence score.")
 
 @compile(
     tag="@megvii/yolox-nano",
