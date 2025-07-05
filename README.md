@@ -45,21 +45,20 @@ The compiler will load the entrypoint function, create a remote sandbox, and com
 ![compiling a function](media/fma.gif)
 
 ## Inspecting the Generated Code
-Developers with source code access can download and inspect the generated native code. 
-Because our compiler can generate many different native implementations for a given predictor, developers 
-can retrieve the native code for a specific prediction using the prediction identifier:
+Once you compile a function, you can download the generated native code:
 ```sh
-# Retrieve the source code for a given prediction
-$ python3 tools/source.py       \
-  --prediction <prediction id>  \
-  --access-key <access key>
+# Retrieve the generated C++ source code for a given predictor
+$ fxn source --predictor @username/some-function
 ```
 
 > [!NOTE]
-> You must have source code access to retrieve generated code. If you would like to request source code access, [reach out to us](mailto:stdin@fxn.ai).
+> Because our compiler can generate hundreds of implementations for a given predictor, we recommend 
+> using `fxn source --prediction <id>` to get the generated native code for a specific prediction. The 
+> provided `id` MUST have been returned by our API.
 
 > [!WARNING]
-> The generated code is provided for reference and cannot be compiled independently, as it depends on additional scaffolding provided by the Function compiler toolchain.
+> The generated code is provided for reference and cannot be compiled independently, as it depends on 
+> additional scaffolding provided by the Function compiler toolchain.
 
 ## Useful Links
 - [Discover predictors to use in your apps](https://fxn.ai/explore).
