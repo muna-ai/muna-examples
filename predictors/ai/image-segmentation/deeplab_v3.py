@@ -24,7 +24,8 @@ model = deeplabv3_resnet50(weights=weights).eval()
     metadata=[
         OnnxInferenceMetadata(
             model=model,
-            model_args=[randn(1, 3, 520, 520)]
+            model_args=[randn(1, 3, 520, 520)],
+            output_keys=["out", "aux"]
         )
     ]
 )

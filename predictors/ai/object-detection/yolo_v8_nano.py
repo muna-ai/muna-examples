@@ -38,6 +38,10 @@ model: Module = yolo.model
 model.eval()
 labels: dict[int, str] = model.names
 
+# Dry run the model to prepare for export
+model_args = [randn(1, 3, 640, 640)]
+model(*model_args)
+
 # Define predictor
 @compile(
     tag="@ultralytics/yolo-v8-nano",
@@ -50,7 +54,7 @@ labels: dict[int, str] = model.names
     metadata=[
         OnnxInferenceMetadata(
             model=model,
-            model_args=[randn(1, 3, 640, 640)]
+            model_args=model_args
         )
     ]
 )
