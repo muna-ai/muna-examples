@@ -45,7 +45,7 @@ The compiler will load the entrypoint function, create a remote sandbox, and com
 ![compiling a function](media/fma.gif)
 
 ## Inspecting the Generated Code
-Once you compile a function, you can download the generated native code:
+Once you compile a function, you can download the generated C++ code:
 ```sh
 # Retrieve the generated C++ source code for a given predictor
 $ fxn source --predictor @username/some-function
@@ -53,11 +53,11 @@ $ fxn source --predictor @username/some-function
 
 > [!NOTE]
 > Because our compiler can generate hundreds of implementations for a given predictor, we recommend 
-> using `fxn source --prediction <id>` to get the generated native code for a specific prediction. The 
-> provided `id` MUST have been returned by our API.
+> using `fxn source --prediction <id>` to get the generated C++ code for a specific prediction. The 
+> provided `id` **must have been provided directly by our API**.
 
 > [!WARNING]
-> The generated code is provided for reference and cannot be compiled independently, as it depends on 
+> The generated C++ code is provided for reference and cannot be compiled independently, as it depends on 
 > additional scaffolding provided by the Function compiler toolchain.
 
 ## Useful Links
