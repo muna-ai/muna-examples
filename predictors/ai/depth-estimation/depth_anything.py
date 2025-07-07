@@ -43,7 +43,7 @@ model = DepthAnything.from_pretrained("LiheYoung/depth_anything_vitl14").eval()
 def estimate_depth (image: Image.Image) -> Tensor:
     """
     Estimate metric depth from an image using Depth Anything model.
-    
+
     Parameters:
         image (PIL.Image): Input image.
     
@@ -55,7 +55,7 @@ def estimate_depth (image: Image.Image) -> Tensor:
     image = image.convert("RGB")
     image_tensor = F.to_tensor(image)   # (3,H,W)
     image_tensor = image_tensor[None]   # (1,3,H,W)
-    resized_tensor = resize_image(image_tensor)
+    resized_tensor = _resize_image(image_tensor)
     normalized_tensor = F.normalize(
         resized_tensor, 
         mean=[0.485, 0.456, 0.406], 
