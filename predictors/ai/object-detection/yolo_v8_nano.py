@@ -83,12 +83,12 @@ def detect_objects(
     # Extract components
     logits: Tensor = model_outputs[0]                   # (1,84,8400)
     predictions = logits[0].T                           # (8400,84)
-    boxes_cxcywh = predictions[:,:4] * scale_factors    # (8400,4)
+    boxes_cxcywh = predictions[:,:4]                    # (8400,4)
     class_scores = predictions[:,4:]                    # (8400,80)
     max_scores, class_ids = class_scores.max(dim=1)     # (8400,), (8400,)
     # Filter by score
     confidence_mask = max_scores >= min_confidence
-    filtered_boxes = boxes_cxcywh[confidence_mask]
+    filtered_boxes = boxes_cxcywh[confidence_mask] * scale_factors
     filtered_scores = max_scores[confidence_mask]
     filtered_class_ids = class_ids[confidence_mask]
     # Check if any detections remain

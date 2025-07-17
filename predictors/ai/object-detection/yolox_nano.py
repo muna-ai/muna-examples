@@ -83,14 +83,14 @@ def detect_objects(
     # Run model
     logits: Tensor = model(image_tensor[None])
     # Parse boxes
-    boxes_cxcywh = logits[0,:,:4] * scale_factors
+    boxes_cxcywh = logits[0,:,:4]
     box_scores = logits[0,:,4,]
     class_logits = logits[0,:,5:]
     class_scores, class_ids = class_logits.max(dim=1)
     box_confidences = box_scores * class_scores
     # Filter
     confidence_mask = box_confidences >= min_confidence
-    filtered_boxes = boxes_cxcywh[confidence_mask]
+    filtered_boxes = boxes_cxcywh[confidence_mask] * scale_factors
     filtered_confidences = box_confidences[confidence_mask]
     filtered_class_ids = class_ids[confidence_mask]
     # Check if any detections remain

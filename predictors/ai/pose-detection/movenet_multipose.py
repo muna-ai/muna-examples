@@ -9,7 +9,7 @@
 #     "fxn",
 #     "onnxruntime",
 #     "rich",
-#     "torchvision",
+#     "torchvision"
 # ]
 # ///
 
@@ -112,6 +112,6 @@ def detect_poses (image: Image.Image, min_score: float=0.3) -> list[Pose]:
 
 if __name__ == "__main__":
     import rich
-    image = Image.open("test/media/runner.jpg")
+    image = Image.open("media/metro.jpg")
     poses = detect_poses(image)
     rich.print_json(data=[pose.model_dump() for pose in poses])
