@@ -17,9 +17,9 @@ from fxn import compile, Sandbox
 from fxn.beta import OnnxInferenceMetadata
 from PIL import Image
 from pydantic import BaseModel, Field
-from torch import torch, inference_mode, randn, tensor, Tensor
+from torch import inference_mode, randn, tensor, Tensor
 from torch.nn import Module
-from torchvision.ops import batched_nms, box_convert
+from torchvision.ops import box_convert, nms
 from torchvision.transforms import functional as F
 from torchvision.utils import draw_bounding_boxes
 from ultralytics import YOLO
@@ -138,13 +138,11 @@ def detect_poses(
     predictions = result[0].T                               # (8400, 56)
     boxes_cxcywh = predictions[:,:4]                        # (8400, 4)
     max_scores = predictions[:,4]                           # (8400,)
-    keypoints = predictions[:, 5:].reshape(-1, 17, 3)       # (8400,51) -> (8400,17,3)
-    class_ids = torch.zeros_like(max_scores).long()         # Always "person" (class 0)
+    keypoints = predictions[:,5:].reshape(-1, 17, 3)        # (8400,51) -> (8400,17,3)
     # Filter by score
     confidence_mask = max_scores >= min_confidence
     filtered_boxes = boxes_cxcywh[confidence_mask] * box_scale_factors
     filtered_scores = max_scores[confidence_mask]
-    filtered_class_ids = class_ids[confidence_mask]
     filtered_keypoints = keypoints[confidence_mask] * keypoint_scale_factors
     # Check if any detections remain
     if len(filtered_boxes) == 0:
@@ -155,21 +153,19 @@ def detect_poses(
         in_fmt="cxcywh",
         out_fmt="xyxy"
     )
-    keep_indices = batched_nms(
+    keep_indices = nms(
         boxes_xyxy,
         scores=filtered_scores,
-        idxs=filtered_class_ids,
         iou_threshold=max_iou
     )
     final_boxes = filtered_boxes[keep_indices]
     final_scores = filtered_scores[keep_indices]
-    final_class_ids = filtered_class_ids[keep_indices]
     final_keypoints = filtered_keypoints[keep_indices]
     # Create pose objects
     poses = [
-        _create_pose(class_id, confidence, box, kps)
-        for class_id, confidence, box, kps
-        in zip(final_class_ids, final_scores, final_boxes, final_keypoints)
+        _create_pose(box, kps, confidence)
+        for box, kps, confidence
+        in zip(final_boxes, final_keypoints, final_scores)
     ]
     # Return
     return poses
@@ -200,10 +196,9 @@ def _preprocess_image(
     return image_tensor, box_scale_factors, keypoint_scale_factors
 
 def _create_pose(
-    class_id: Tensor,
-    confidence: Tensor,
     box: Tensor,
-    keypoints: Tensor
+    keypoints: Tensor,
+    confidence: Tensor
 ) -> Pose:
     """
     Create a `Pose` object from raw pose tensor data.
@@ -219,7 +214,7 @@ def _create_pose(
         center_y=box[1].item(),
         width=box[2].item(),
         height=box[3].item(),
-        label=labels[class_id.item()],
+        label=labels[0],
         confidence=confidence.item(),
         keypoints=keypoint_data
     )
