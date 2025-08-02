@@ -11,36 +11,36 @@ $ uv run predictors/ai/pose-detection/yolo_v8_pose_xlarge.py
 
 `uv` will automatically install any required Python packages then run the script.
 
-## Compiling the Predictor with Function
+## Compiling the Predictor
 Once you have chosen a pose detection predictor to use in your application, first update the predictor tag of the 
-detection function with your Function username:
+detection function with your Muna username:
 ```diff
 # Define predictor
 @compile(
 -   tag="@ultralytics/yolo-v8-pose-xlarge",
-+   tag="@<YOUR FUNCTION USERNAME>/yolo-v8-pose-xlarge",
++   tag="@<YOUR MUNA USERNAME>/yolo-v8-pose-xlarge",
     ...
 )
 def detect_poses(...) -> list[Pose]:
     ...
 ```
 
-Next, compile the Python code with Function:
+Next, compile the Python code with Muna:
 ```bash
 # Run this in Terminal
 $ fxn compile --overwrite predictors/ai/pose-detection/yolo_v8_pose_xlarge.py
 ```
 
-Function will generate and compile self-contained, cross-platform native code that runs the pose detection function.
+Muna will generate and compile self-contained, cross-platform native code that runs the pose detection.
 
 ## Running the Predictor
 Once compiled, you can run the predictor on any device using our client libraries. For example, run the predictor in 
 the command line:
 ```bash
 # Run this in Terminal
-$ fxn predict @<YOUR FUNCTION USERNAME>/yolo-v8-pose-xlarge --image @./path/to/image.jpg
+$ fxn predict @<YOUR MUNA USERNAME>/yolo-v8-pose-xlarge --image @path/to/image.jpg
 ```
 
-Function compiles predictors to run on Android, iOS, macOS, Linux, visionOS, WebAssembly, and Windows. We provide
+Muna compiles predictors to run on Android, iOS, macOS, Linux, visionOS, WebAssembly, and Windows. We provide
 client libraries to run these predictors for JavaScript, Kotlin, Android, React Native, Unity, and more.
 [Learn more](https://docs.fxn.ai/predictions/create).

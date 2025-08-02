@@ -1,5 +1,5 @@
 #
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -7,10 +7,10 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #     "fxn",
+#     "huggingface_hub",
 #     "torch",
 #     "torchvision",
-#     "opencv-python-headless",
-#     "huggingface_hub",
+#     "opencv-python-headless"
 # ]
 # ///
 
@@ -107,9 +107,9 @@ def _resize_image(
     # Return
     return resized
 
-def _colorize_depth(depth_tensor: Tensor) -> Image.Image:
+def _visualize_depth(depth_tensor: Tensor) -> Image.Image:
     """
-    Colorize a depth tensor using OpenCV's COLORMAP_INFERNO heatmap.
+    Visualize a depth tensor using OpenCV's COLORMAP_INFERNO heatmap.
     """
     depth_np = depth_tensor.cpu().numpy()
     depth_range = depth_np.max() - depth_np.min()
@@ -120,11 +120,9 @@ def _colorize_depth(depth_tensor: Tensor) -> Image.Image:
     return Image.fromarray(depth_colored)
 
 if __name__ == "__main__":
-    import rich
     # Predict metric depth
     image = Image.open("room.jpg")
     depth_tensor = estimate_depth(image)
-    rich.print(f"Metric depth shape: {depth_tensor.shape} range: [{depth_tensor.min().item():.2f}, {depth_tensor.max().item():.2f}]")
     # Colorize depth tensor and save
-    depth_img = _colorize_depth(depth_tensor)
-    depth_img.save("test_depth_output.png")
+    depth_img = _visualize_depth(depth_tensor)
+    depth_img.show()

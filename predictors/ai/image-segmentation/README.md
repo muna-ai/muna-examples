@@ -1,44 +1,44 @@
-# Object Detection Predictors
-This directory contains a few predictors that detect objects within an image using popular object detection models.
+# Image Segmentation Predictors
+This directory contains a few predictors that segment objects within an image using popular image segmentation models.
 
-## Running an Object Detection Sample
+## Running an Image Segmentation Sample
 The first step is to run the prediction function directly. First, we recommend installing [uv](https://docs.astral.sh/uv/getting-started/installation/) as it simplifies working with Python dependencies. Once `uv` is installed, you can run 
-any of the object detection predictors by simply executing the script directly:
+any of the image segmentation predictors by simply executing the script directly:
 ```bash
 # Run this in Terminal
-$ uv run predictors/ai/object-detection/yolo_v8_nano.py
+$ uv run predictors/ai/image-segmentation/yolo_v8_segment_large.py
 ```
 
 `uv` will automatically install any required Python packages then run the script.
 
 ## Compiling the Predictor
-Once you have chosen an object detection predictor to use in your application, first update the predictor tag of the 
-detection function with your Muna username:
+Once you have chosen an image segmentation predictor to use in your application, first update the predictor tag of the 
+segmentation function with your Muna username:
 ```diff
 # Define predictor
 @compile(
--   tag="@ultralytics/yolo-v8-nano",
-+   tag="@<YOUR MUNA USERNAME>/yolo-v8-nano",
+-   tag="@ultralytics/yolo-v8-segment-large",
++   tag="@<YOUR MUNA USERNAME>/yolo-v8-segment-large",
     ...
 )
-def detect_objects(...) -> list[Detection]:
+def segment_image(...) -> NDArray[bool]:
     ...
 ```
 
 Next, compile the Python code with Muna:
 ```bash
 # Run this in Terminal
-$ fxn compile --overwrite predictors/ai/object-detection/yolo_v8_nano.py
+$ fxn compile --overwrite predictors/ai/image-segmentation/yolo_v8_segment_large.py
 ```
 
-Muna will generate and compile self-contained, cross-platform code that runs the object detection.
+Muna will generate and compile self-contained, cross-platform code that runs the image segmentation.
 
 ## Running the Predictor
 Once compiled, you can run the predictor on any device using our client libraries. For example, run the predictor in 
 the command line:
 ```bash
 # Run this in Terminal
-$ fxn predict @<YOUR MUNA USERNAME>/yolo-v8-nano --image @path/to/image.jpg
+$ fxn predict @<YOUR MUNA USERNAME>/yolo-v8-segment-large --image @path/to/image.jpg
 ```
 
 Muna compiles predictors to run on Android, iOS, macOS, Linux, visionOS, WebAssembly, and Windows. We provide

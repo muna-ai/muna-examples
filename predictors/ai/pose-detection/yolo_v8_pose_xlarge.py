@@ -1,5 +1,5 @@
 #
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -30,52 +30,6 @@ KEYPOINT_NAMES = [
     "left_wrist", "right_wrist", "left_hip", "right_hip",
     "left_knee", "right_knee", "left_ankle", "right_ankle"
 ]
-KEYPOINT_SKELETON = [
-    # nose to eyes
-    ("nose", "left_eye"),
-    ("nose", "right_eye"),
-    # eyes to ears
-    ("left_eye", "left_ear"),
-    ("right_eye", "right_ear"),
-    # shoulders   
-    ("left_shoulder", "right_shoulder"),
-    # left arm
-    ("left_shoulder", "left_elbow"),
-    ("left_elbow", "left_wrist"),
-    # right arm
-    ("right_shoulder", "right_elbow"),
-    ("right_elbow", "right_wrist"),
-    # shoulders to hips  
-    ("left_shoulder", "left_hip"),
-    ("right_shoulder", "right_hip"),
-    # hips
-    ("left_hip", "right_hip"),
-    # left leg
-    ("left_hip", "left_knee"),
-    ("left_knee", "left_ankle"),
-    # right leg
-    ("right_hip", "right_knee"),
-    ("right_knee", "right_ankle")  
-]
-KEYPOINT_COLOR_MAP = {
-    "nose":"red",
-    "left_eye": "blue",
-    "right_eye": "blue",
-    "left_ear": "purple",
-    "right_ear": "purple",
-    "left_shoulder": "orange",
-    "right_shoulder": "orange",
-    "left_elbow": "yellow",
-    "right_elbow": "yellow",
-    "left_wrist": "cyan",
-    "right_wrist": "cyan",
-    "left_hip": "magenta",
-    "right_hip": "magenta",
-    "left_knee":"pink",
-    "right_knee":"pink",
-    "left_ankle": "brown",
-    "right_ankle": "brown"
-}
 
 class Keypoint(BaseModel):
     x: float = Field(description="Normalized x-coordinate of the keypoint.")
@@ -94,12 +48,12 @@ class Pose(BaseModel):
 
 # Create the YOLO Model
 yolo = YOLO("yolov8x-pose.pt")
-model: Module = yolo.model
-model.eval()
+model: Module = yolo.model.eval()
 labels: dict[int, str] = model.names
 
 # Dry run the model for export
-model_args = [randn(1, 3, 640, 640)]
+INPUT_SIZE = 640
+model_args = [randn(1, 3, INPUT_SIZE, INPUT_SIZE)]
 model(*model_args)
 
 @compile(
@@ -133,12 +87,11 @@ def detect_poses(
         list: Detected poses.
     """
     image_tensor, box_scale_factors, keypoint_scale_factors = _preprocess_image(image, input_size=640)
-    ultralytics_results = model(image_tensor[None]) 
-    result = ultralytics_results[0]                         # (1, 56, 8400)
-    predictions = result[0].T                               # (8400, 56)
-    boxes_cxcywh = predictions[:,:4]                        # (8400, 4)
-    max_scores = predictions[:,4]                           # (8400,)
-    keypoints = predictions[:,5:].reshape(-1, 17, 3)        # (8400,51) -> (8400,17,3)
+    model_outputs = model(image_tensor[None])[0]    # (1,4+1+P,8400)
+    logits = model_outputs[0].T                     # (8400,4+1+P)
+    boxes_cxcywh = logits[:,:4]                     # (8400,4)
+    max_scores = logits[:,4]                        # (8400,)
+    keypoints = logits[:,5:].reshape(-1, 17, 3)     # (8400,51) -> (8400,17,3)
     # Filter by score
     confidence_mask = max_scores >= min_confidence
     filtered_boxes = boxes_cxcywh[confidence_mask] * box_scale_factors
@@ -220,7 +173,7 @@ def _create_pose(
     )
     return pose
 
-def _render_poses(
+def _visualize_poses(
     image: Image.Image,
     detections: list[Pose]
 ) -> Image.Image:
@@ -228,9 +181,55 @@ def _render_poses(
     Render poses on an image.
     """
     from PIL import ImageDraw
+    KEYPOINT_SKELETON = [
+        # nose to eyes
+        ("nose", "left_eye"),
+        ("nose", "right_eye"),
+        # eyes to ears
+        ("left_eye", "left_ear"),
+        ("right_eye", "right_ear"),
+        # shoulders   
+        ("left_shoulder", "right_shoulder"),
+        # left arm
+        ("left_shoulder", "left_elbow"),
+        ("left_elbow", "left_wrist"),
+        # right arm
+        ("right_shoulder", "right_elbow"),
+        ("right_elbow", "right_wrist"),
+        # shoulders to hips  
+        ("left_shoulder", "left_hip"),
+        ("right_shoulder", "right_hip"),
+        # hips
+        ("left_hip", "right_hip"),
+        # left leg
+        ("left_hip", "left_knee"),
+        ("left_knee", "left_ankle"),
+        # right leg
+        ("right_hip", "right_knee"),
+        ("right_knee", "right_ankle")  
+    ]
+    KEYPOINT_COLOR_MAP = {
+        "nose":"red",
+        "left_eye": "blue",
+        "right_eye": "blue",
+        "left_ear": "purple",
+        "right_ear": "purple",
+        "left_shoulder": "orange",
+        "right_shoulder": "orange",
+        "left_elbow": "yellow",
+        "right_elbow": "yellow",
+        "left_wrist": "cyan",
+        "right_wrist": "cyan",
+        "left_hip": "magenta",
+        "right_hip": "magenta",
+        "left_knee":"pink",
+        "right_knee":"pink",
+        "left_ankle": "brown",
+        "right_ankle": "brown"
+    }
+    # Draw bounding boxes
     image = image.convert("RGB")
     image_tensor = F.to_tensor(image)
-    # Draw bounding boxes
     boxes_cxcywh = tensor([[
         detection.center_x * image.width,
         detection.center_y * image.height,
@@ -289,5 +288,5 @@ if __name__ == "__main__":
     print(f"Detected {len(poses)} poses:")
     rich.print_json(data=[pose.model_dump() for pose in poses])
     # Show annotated image
-    annotated_image = _render_poses(image, poses)
+    annotated_image = _visualize_poses(image, poses)
     annotated_image.show()

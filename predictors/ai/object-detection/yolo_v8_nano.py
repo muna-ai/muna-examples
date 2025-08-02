@@ -34,12 +34,12 @@ class Detection(BaseModel):
 
 # Instantiate model
 yolo = YOLO("yolov8n.pt")
-model: Module = yolo.model
-model.eval()
+model: Module = yolo.model.eval()
 labels: dict[int, str] = model.names
 
 # Dry run the model to prepare for export
-model_args = [randn(1, 3, 640, 640)]
+INPUT_SIZE = 640
+model_args = [randn(1, 3, INPUT_SIZE, INPUT_SIZE)]
 model(*model_args)
 
 # Define predictor
@@ -77,14 +77,14 @@ def detect_objects(
         list: Detected objects.
     """
     # Preprocess
-    image_tensor, scale_factors = _preprocess_image(image, input_size=640)
+    image_tensor, scale_factors = _preprocess_image(image, input_size=INPUT_SIZE)
     # Run model
     model_outputs = model(image_tensor[None])
     # Extract components
-    logits: Tensor = model_outputs[0]                   # (1,84,8400)
-    predictions = logits[0].T                           # (8400,84)
+    logits: Tensor = model_outputs[0]                   # (1,4+C,8400)
+    predictions = logits[0].T                           # (8400,4+C)
     boxes_cxcywh = predictions[:,:4]                    # (8400,4)
-    class_scores = predictions[:,4:]                    # (8400,80)
+    class_scores = predictions[:,4:]                    # (8400,C)
     max_scores, class_ids = class_scores.max(dim=1)     # (8400,), (8400,)
     # Filter by score
     confidence_mask = max_scores >= min_confidence

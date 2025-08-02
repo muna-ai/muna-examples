@@ -1,7 +1,15 @@
 #
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
+
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "muna",
+#     "torchvision"
+# ]
+# ///
 
 from fxn import compile, Sandbox
 from fxn.beta import OnnxInferenceMetadata
@@ -12,6 +20,7 @@ from torchvision.transforms import functional as F
 
 weights = DeepLabV3_ResNet50_Weights.DEFAULT
 model = deeplabv3_resnet50(weights=weights).eval()
+INPUT_SIZE = 520
 
 @compile(
     tag="@google/deeplab-v3",
@@ -24,7 +33,7 @@ model = deeplabv3_resnet50(weights=weights).eval()
     metadata=[
         OnnxInferenceMetadata(
             model=model,
-            model_args=[randn(1, 3, 520, 520)],
+            model_args=[randn(1, 3, INPUT_SIZE, INPUT_SIZE)],
             output_keys=["out", "aux"]
         )
     ]
@@ -32,7 +41,7 @@ model = deeplabv3_resnet50(weights=weights).eval()
 @inference_mode()
 def predict (image: Image.Image) -> tuple[str, float]:
     # Preprocess image
-    image = F.resize(image, [520])
+    image = F.resize(image, [INPUT_SIZE])
     image_tensor = F.to_tensor(image)
     image_tensor = F.normalize(
         image_tensor,

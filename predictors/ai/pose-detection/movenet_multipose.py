@@ -1,5 +1,5 @@
 #
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -64,26 +64,6 @@ class Pose (BaseModel):
 model_path = Path("test/models/movenet-multipose-192-fp32.onnx")
 model = InferenceSession(model_path.name if not model_path.exists() else model_path)
 
-def _parse_pose (data: ndarray) -> Pose:
-    """
-    Parse a pose vector with shape (56,)
-    """
-    pose_dict = {
-        "score": data[55],
-        "rect": {
-            "x": data[52],
-            "y": data[51],
-            "width": data[54],
-            "height": data[53]
-        }
-    }
-    for idx, keypoint in enumerate(KEYPOINTS):
-        kp_x = data[3 * idx + 1]
-        kp_y = data[3 * idx]
-        kp_score = data[3 * idx + 2]
-        pose_dict[keypoint] = { "x": kp_x, "y": kp_y, "score": kp_score }
-    return Pose(**pose_dict)
-
 @compile(
     tag="@yusuf/movenet-multipose",
     description="Detect human poses in an image.",
@@ -109,6 +89,26 @@ def detect_poses (image: Image.Image, min_score: float=0.3) -> list[Pose]:
     poses = [_parse_pose(data) for data in valid_pose_data]
     # Return
     return poses
+
+def _parse_pose (data: ndarray) -> Pose:
+    """
+    Parse a pose vector with shape (56,)
+    """
+    pose_dict = {
+        "score": data[55],
+        "rect": {
+            "x": data[52],
+            "y": data[51],
+            "width": data[54],
+            "height": data[53]
+        }
+    }
+    for idx, keypoint in enumerate(KEYPOINTS):
+        kp_x = data[3 * idx + 1]
+        kp_y = data[3 * idx]
+        kp_score = data[3 * idx + 2]
+        pose_dict[keypoint] = { "x": kp_x, "y": kp_y, "score": kp_score }
+    return Pose(**pose_dict)
 
 if __name__ == "__main__":
     import rich
