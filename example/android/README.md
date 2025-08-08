@@ -1,4 +1,4 @@
-# Function Playground for Android
+# Muna Playground for Android
 This sample project illustrates how to run a compiled Python function in your Android apps.
 
 ## Setup Instructions
@@ -10,28 +10,28 @@ First, open up the project in Android Studio. Then in
 method:
 ```kt
 // Add your access key here
-val fxn = Function("<ACCESS KEY>")
+val muna = Muna("<ACCESS KEY>")
 ```
 
 
 
 ### Specifying your Predictor Tag
 In [`MainActivity.kt`](app/src/main/java/app/fxn/playground/MainActivity.kt), find the 
-`Greeting.createPrediction` function and specify your predictor tag in the call to `fxn.predictions.create`:
+`Greeting.createPrediction` function and specify your predictor tag in the call to `muna.predictions.create`:
 ```kt
-val prediction = fxn.predictions.create(
+val prediction = muna.predictions.create(
     "@fxn/greeting",      // replace this with your predictor tag
     mapOf("name" to name)
 )
 ```
 
 You will also need to specify your access key and predictor tag in the [`build.gradle.kts`](app/build.gradle.kts) 
-file to [embed the predictor](https://docs.fxn.ai/concepts#sandboxing-on-android-and-ios) into your app at build-time:
+file to [embed the predictor](https://docs.muna.ai/concepts#sandboxing-on-android-and-ios) into your app at build-time:
 ```kt
-fxn {
+muna {
   accessKey = "<ACCESS KEY>"              // add your access key here
   embeds.addAll(
-    FunctionEmbed(tag = "@fxn/greeting")  // replace this with your predictor tag
+    MunaEmbed(tag = "@fxn/greeting")  // replace this with your predictor tag
   )
 }
 ```
