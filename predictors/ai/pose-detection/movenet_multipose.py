@@ -6,15 +6,15 @@
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
-#     "fxn",
+#     "muna",
 #     "onnxruntime",
 #     "rich",
 #     "torchvision"
 # ]
 # ///
 
-from fxn import compile, Sandbox
-from fxn.beta import ONNXRuntimeInferenceSessionMetadata
+from muna import compile, Sandbox
+from muna.beta import OnnxRuntimeInferenceSessionMetadata
 from numpy import array, ndarray
 from onnxruntime import InferenceSession
 from pathlib import Path
@@ -66,13 +66,13 @@ model = InferenceSession(model_path.name if not model_path.exists() else model_p
 
 @compile(
     tag="@yusuf/movenet-multipose",
-    description="Detect human poses in an image.",
+    description="Detect human poses in an image with MoveNet Multipose.",
     sandbox=Sandbox()
         .pip_install("onnxruntime")
         .pip_install("torchvision", index_url="https://download.pytorch.org/whl/cpu")
         .upload_file(model_path),
     metadata=[
-        ONNXRuntimeInferenceSessionMetadata(session=model, model_path=model_path.name)
+        OnnxRuntimeInferenceSessionMetadata(session=model, model_path=model_path.name)
     ]
 )
 def detect_poses (image: Image.Image, min_score: float=0.3) -> list[Pose]:

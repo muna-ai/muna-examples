@@ -11,13 +11,14 @@
 # ]
 # ///
 
-from fxn import compile, Sandbox
-from fxn.beta import OnnxInferenceMetadata
+from muna import compile, Sandbox
+from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
 from torch import inference_mode, randn, Tensor
 from torchvision.models.segmentation import deeplabv3_resnet50, DeepLabV3_ResNet50_Weights
 from torchvision.transforms import functional as F
 
+# Create the model
 weights = DeepLabV3_ResNet50_Weights.DEFAULT
 model = deeplabv3_resnet50(weights=weights).eval()
 INPUT_SIZE = 520
@@ -31,7 +32,7 @@ INPUT_SIZE = 520
         index_url="https://download.pytorch.org/whl/cpu"
     ),
     metadata=[
-        OnnxInferenceMetadata(
+        OnnxRuntimeInferenceMetadata(
             model=model,
             model_args=[randn(1, 3, INPUT_SIZE, INPUT_SIZE)],
             output_keys=["out", "aux"]

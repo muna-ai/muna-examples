@@ -13,8 +13,8 @@
 # ]
 # ///
 
-from fxn import compile, Sandbox
-from fxn.beta import OnnxInferenceMetadata
+from muna import compile, Sandbox
+from muna.beta import OnnxRuntimeInferenceMetadata
 from numpy import bool_
 from numpy.typing import NDArray
 from PIL import Image
@@ -52,7 +52,7 @@ class YOLOSegWrapper(Module):
         mask_prototypes: Tensor = outputs[1][-1]
         return logits, mask_prototypes
 
-# Create the YOLO Model
+# Create the model
 yolo = YOLO("yolov8l-seg.pt")
 model = YOLOSegWrapper(yolo.model).eval()
 labels: dict[int, str] = yolo.model.names
@@ -71,7 +71,7 @@ model(*model_args)
         .pip_install("ultralytics")
         .pip_install("opencv-python-headless"),
     metadata=[
-        OnnxInferenceMetadata(model=model, model_args=model_args)
+        OnnxRuntimeInferenceMetadata(model=model, model_args=model_args)
     ]
 )
 @inference_mode()

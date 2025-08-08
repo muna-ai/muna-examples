@@ -6,8 +6,8 @@
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
-#     "fxn",
 #     "loguru",
+#     "muna",
 #     "opencv-python-headless",
 #     "packaging",
 #     "psutil",
@@ -17,8 +17,8 @@
 # ]
 # ///
 
-from fxn import compile, Sandbox
-from fxn.beta import OnnxInferenceMetadata
+from muna import compile, Sandbox
+from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
 from pydantic import BaseModel, Field
 from torch import inference_mode, randn, tensor, Tensor
@@ -54,7 +54,7 @@ labels = [label for label in labels if label not in ("__background__", "N/A")]
         .pip_install("torchvision", index_url="https://download.pytorch.org/whl/cpu")
         .pip_install("loguru", "opencv-python-headless", "psutil", "tabulate"),
     metadata=[
-        OnnxInferenceMetadata(
+        OnnxRuntimeInferenceMetadata(
             model=model,
             model_args=[randn(1, 3, INPUT_SIZE, INPUT_SIZE)]
         )

@@ -13,8 +13,8 @@
 # ]
 # ///
 
-from fxn import compile, Sandbox
-from fxn.beta import OnnxInferenceMetadata
+from muna import compile, Sandbox
+from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
 from pydantic import BaseModel, Field
 from torch import inference_mode, randn, tensor, Tensor
@@ -52,10 +52,7 @@ model(*model_args)
         .pip_install("ultralytics")
         .pip_install("opencv-python-headless"),
     metadata=[
-        OnnxInferenceMetadata(
-            model=model,
-            model_args=model_args
-        )
+        OnnxRuntimeInferenceMetadata(model=model, model_args=model_args)
     ]
 )
 @inference_mode()

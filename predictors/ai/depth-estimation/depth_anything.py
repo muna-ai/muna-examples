@@ -6,8 +6,8 @@
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
-#     "fxn",
 #     "huggingface_hub",
+#     "muna",
 #     "torch",
 #     "torchvision",
 #     "opencv-python-headless"
@@ -15,7 +15,7 @@
 # ///
 
 from cv2 import applyColorMap, cvtColor, COLOR_BGR2RGB, COLORMAP_INFERNO
-from fxn import compile, Sandbox
+from muna import compile, Sandbox
 from numpy import ceil, uint8
 from PIL import Image
 from torch import inference_mode, Tensor
@@ -37,10 +37,10 @@ model = DepthAnything.from_pretrained("LiheYoung/depth_anything_vitl14").eval()
             "torchvision==0.21",
             index_url="https://download.pytorch.org/whl/cpu"
         )
-        .pip_install("opencv-python-headless", "huggingface_hub==0.17.3"),
+        .pip_install("huggingface_hub==0.17.3", "opencv-python-headless"),
 )
 @inference_mode()
-def estimate_depth (image: Image.Image) -> Tensor:
+def estimate_depth(image: Image.Image) -> Tensor:
     """
     Estimate metric depth from an image using Depth Anything model.
 

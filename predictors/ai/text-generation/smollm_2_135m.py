@@ -3,12 +3,20 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "huggingface_hub",
+#     "llama-cpp-python",
+#     "muna"
+# ]
+# ///
+
 from muna import compile, Sandbox
 from muna.beta import Message
 from llama_cpp import Llama
 from pathlib import Path
-from pydantic import BaseModel
-from typing import Iterator, Literal
+from typing import Iterator
 
 model_path = Path("test/models/smollm2_135m.gguf")
 model = Llama(
@@ -17,11 +25,11 @@ model = Llama(
 )
 
 @compile(
-    tag="@yusuf/smollm2-135m",
+    tag="@huggingface/smollm2-135m",
     description="Generate text with HuggingFace SmolLM2 135M.",
     sandbox=Sandbox()
         .apt_install("clang")
-        .pip_install("llama-cpp-python")
+        .pip_install("huggingface_hub", "llama-cpp-python")
         .upload_file(model_path)
 )
 def predict(messages: list[Message]) -> Iterator[str]:
