@@ -12,17 +12,17 @@
 # ]
 # ///
 
+from huggingface_hub import hf_hub_download
 from muna import compile, Sandbox
 from muna.beta import Message
 from llama_cpp import Llama
-from pathlib import Path
 from typing import Iterator
 
-model_path = Path("test/models/smollm2_135m.gguf")
-model = Llama(
-    model_path=model_path.name if not model_path.exists() else str(model_path),
-    verbose=False
+model_path = hf_hub_download(
+    "unsloth/SmolLM2-135M-Instruct-GGUF",
+    "SmolLM2-135M-Instruct-Q8_0.gguf"
 )
+model = Llama(model_path=model_path, verbose=False)
 
 @compile(
     tag="@huggingface/smollm2-135m",
