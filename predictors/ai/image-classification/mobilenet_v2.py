@@ -6,14 +6,14 @@
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
-#     "fxn",
+#     "muna",
 #     "rich",
 #     "torchvision",
 # ]
 # ///
 
-from fxn import compile, Sandbox
-from fxn.beta import OnnxInferenceMetadata
+from muna import compile, Sandbox
+from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
 from torch import argmax, inference_mode, softmax, randn
 from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
@@ -25,20 +25,21 @@ model = mobilenet_v2(weights=weights).eval()
 @compile(
     tag="@pytorch/mobilenet-v2",
     description="Classify an image with MobileNet v2.",
+    access="public",
     sandbox=Sandbox().pip_install(
         "torch==2.6.0",
         "torchvision==0.21",
         index_url="https://download.pytorch.org/whl/cpu"
     ),
     metadata=[
-        OnnxInferenceMetadata(
+        OnnxRuntimeInferenceMetadata(
             model=model,
             model_args=[randn(1, 3, 224, 224)]
         ),
     ]
 )
 @inference_mode()
-def classify(image: Image.Image) -> tuple[str, float]:
+def classify_image(image: Image.Image) -> tuple[str, float]:
     """
     Classify an image with MobileNet v2.
     
@@ -72,5 +73,5 @@ def classify(image: Image.Image) -> tuple[str, float]:
 if __name__ == "__main__":
     import rich
     image = Image.open("media/cat.jpg")
-    label, score = classify(image)
+    label, score = classify_image(image)
     rich.print(label, score)

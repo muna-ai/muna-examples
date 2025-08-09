@@ -3,13 +3,13 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from fxn import Function
+from muna import Muna
 
-# Create Function client
-fxn = Function(access_key="<ACCESS KEY>")
+# Create a Muna client
+muna = Muna(access_key="<ACCESS KEY>")
 
 # Make a prediction
-prediction = fxn.predictions.create(
+prediction = muna.predictions.create(
     tag="@fxn/greeting",
     inputs={ "name": "Yusuf" }
 )

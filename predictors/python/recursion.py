@@ -1,9 +1,9 @@
 #
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from fxn import compile
+from muna import compile
 
 # Function has limited support for recursive functions, primarily due to challenges in type propagation.
 # Recursive functions **must** have return type annotations, and for now those types must be simple.
@@ -13,7 +13,7 @@ from fxn import compile
     tag="@yusuf/recursion",
     description="Test recursion support."
 )
-def factorial (n: int) -> int:
+def factorial(n: int) -> int:
     match n:
         case 0: return 1
         case 1: return 1

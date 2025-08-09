@@ -6,14 +6,14 @@
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
-#     "fxn",
+#     "muna",
 #     "rich",
 #     "torchvision",
 # ]
 # ///
 
-from fxn import compile, Sandbox
-from fxn.beta import OnnxInferenceMetadata
+from muna import compile, Sandbox
+from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
 from torch import randn, argmax, softmax
 from torchvision.models import convnext_base, ConvNeXt_Base_Weights
@@ -28,13 +28,13 @@ model = convnext_base(weights=weights).eval()
     access="public",
     sandbox=Sandbox().pip_install("torchvision", index_url="https://download.pytorch.org/whl/cpu"),
     metadata=[
-        OnnxInferenceMetadata(
+        OnnxRuntimeInferenceMetadata(
             model=model,
             model_args=[randn(1, 3, 224, 224)]
         )
     ]
 )
-def classify(image: Image.Image) -> tuple[str, float]:
+def classify_image(image: Image.Image) -> tuple[str, float]:
     """
     Classify an image using ConvNeXt (Base Model)
 
@@ -66,5 +66,5 @@ def classify(image: Image.Image) -> tuple[str, float]:
 
 if __name__ == "__main__":
     image = Image.open(f"media/cat.jpg")
-    what, score = classify(image)
+    what, score = classify_image(image)
     print(what, score)

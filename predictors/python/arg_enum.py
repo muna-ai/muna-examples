@@ -1,10 +1,10 @@
 #
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
 from enum import IntEnum
-from fxn import compile
+from muna import compile
 
 class Direction (IntEnum):
     North = 0
@@ -16,7 +16,7 @@ class Direction (IntEnum):
     tag="@yusuf/arg-enum",
     description="Test enumeration argument support."
 )
-def direction_to_heading_angle (direction: Direction) -> float:
+def direction_to_heading_angle(direction: Direction) -> float:
     """
     Convert a direction constant to a heading angle in degrees (clockwise).
     """
