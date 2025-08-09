@@ -13,9 +13,9 @@
 # ///
 
 from huggingface_hub import hf_hub_download
+from llama_cpp import Llama
 from muna import compile, Sandbox
 from muna.beta import Message
-from llama_cpp import Llama
 from typing import Iterator
 
 model_path = hf_hub_download(
