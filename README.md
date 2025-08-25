@@ -20,7 +20,7 @@ $ muna auth login <ACCESS KEY>
 ```
 
 ## Compiling a Function
-The [predictors](/predictors) directory contains several prediction functions, ranging from very simple functions to 
+The [`predictors`](/predictors) directory contains several prediction functions, ranging from very simple functions to 
 AI inference with PyTorch. Internally, we use these functions to test language and library coverage in the compiler.
 To compile a function, first update the predictor tag with your Muna username:
 ```py
