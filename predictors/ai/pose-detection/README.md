@@ -28,7 +28,7 @@ def detect_poses(...) -> list[Pose]:
 Next, compile the Python code with Muna:
 ```bash
 # Run this in Terminal
-$ fxn compile --overwrite predictors/ai/pose-detection/yolo_v8_pose_xlarge.py
+$ muna compile --overwrite predictors/ai/pose-detection/yolo_v8_pose_xlarge.py
 ```
 
 Muna will generate and compile self-contained, cross-platform native code that runs the pose detection.
@@ -38,9 +38,10 @@ Once compiled, you can run the predictor on any device using our client librarie
 the command line:
 ```bash
 # Run this in Terminal
-$ fxn predict @<YOUR MUNA USERNAME>/yolo-v8-pose-xlarge --image @path/to/image.jpg
+$ muna predict @USERNAME/yolo-v8-pose-xlarge --image @path/to/image.jpg
 ```
 
-Muna compiles predictors to run on Android, iOS, macOS, Linux, visionOS, WebAssembly, and Windows. We provide
-client libraries to run these predictors for JavaScript, Kotlin, Android, React Native, Unity, and more.
-[Learn more](https://docs.fxn.ai/predictions/create).
+> [!TIP]
+> Muna compiles predictors to run on Android, iOS, macOS, Linux, visionOS, WebAssembly, and Windows. We provide
+> client libraries to run these predictors for JavaScript, Kotlin, Android, React Native, Unity, and more.
+> [Learn more](https://docs.muna.ai/predictions/create).
