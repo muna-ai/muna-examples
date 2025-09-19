@@ -11,9 +11,8 @@
 # dependencies = [
 #     "huggingface_hub",
 #     "muna",
-#     "torch",
-#     "torchvision",
 #     "opencv-python-headless"
+#     "torchvision"
 # ]
 # ///
 
@@ -33,7 +32,10 @@ sys.path.insert(0, str(Path.cwd() / "Depth-Anything"))
 from depth_anything.dpt import DepthAnything
 
 # Create model
-model = DepthAnything.from_pretrained("LiheYoung/depth_anything_vitl14").eval()
+model = DepthAnything.from_pretrained(
+    "LiheYoung/depth_anything_vitl14",
+    config={ "localhub": False }
+).eval()
 
 @compile(
     tag="@tiktok/depth-anything",
@@ -102,22 +104,21 @@ def _get_resize_dimensions(
     # Return
     return dst_width, dst_height
 
-def _visualize_depth(depth_tensor: Tensor) -> Image.Image:
+def _visualize_depth(depth: ndarray) -> Image.Image:
     """
-    Visualize a depth tensor using OpenCV's COLORMAP_INFERNO heatmap.
+    Colorize a depth array using OpenCV's COLORMAP_INFERNO heatmap.
     """
-    depth_np = depth_tensor.cpu().numpy()
-    depth_range = depth_np.max() - depth_np.min()
-    depth_normalized = (depth_np - depth_np.min()) / depth_range
+    depth_range = depth.max() - depth.min()
+    depth_normalized = (depth - depth.min()) / depth_range
     depth_uint8 = (depth_normalized * 255).astype(uint8)
     depth_colored = applyColorMap(depth_uint8, COLORMAP_INFERNO)
     depth_colored = cvtColor(depth_colored, COLOR_BGR2RGB)
     return Image.fromarray(depth_colored)
 
 if __name__ == "__main__":
-    # Predict metric depth
+    # Predict
     image = Image.open("compiler/media/city.jpg")
-    depth_tensor = estimate_depth(image)
-    # Colorize depth tensor and save
-    depth_img = _visualize_depth(depth_tensor)
+    depth = estimate_depth(image)
+    # Visualize
+    depth_img = _visualize_depth(depth)
     depth_img.show()
