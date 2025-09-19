@@ -3,6 +3,9 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
+# NOTE: In order to run and/or compile this model, you must clone Depth Anything into the current working directory.
+# Run `git clone https://github.com/LiheYoung/Depth-Anything.git` then run/compile this script.
+
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
@@ -15,13 +18,18 @@
 # ///
 
 from cv2 import applyColorMap, cvtColor, COLOR_BGR2RGB, COLORMAP_INFERNO
-from muna import compile, Sandbox
-from numpy import ceil, uint8
+from muna import compile, Parameter, Sandbox
+from muna.beta import OnnxRuntimeInferenceMetadata
+from numpy import ceil, ndarray, uint8
+from pathlib import Path
 from PIL import Image
-from torch import inference_mode, Tensor
-from torch.nn.functional import interpolate
+import sys
+from torch import inference_mode, randn, Tensor
 from torchvision.transforms import functional as F
+from typing import Annotated
 
+# Import Depth Anything
+sys.path.insert(0, str(Path.cwd() / "Depth-Anything"))
 from depth_anything.dpt import DepthAnything
 
 # Create model
@@ -29,83 +37,70 @@ model = DepthAnything.from_pretrained("LiheYoung/depth_anything_vitl14").eval()
 
 @compile(
     tag="@tiktok/depth-anything",
-    description="Depth estimation using Depth Anything model.",
-    access="unlisted",
+    description="Estimate metric depth from an image using Depth Anything.",
+    access="public",
     sandbox=Sandbox()
-        .pip_install(
-            "torch==2.6.0",
-            "torchvision==0.21",
-            index_url="https://download.pytorch.org/whl/cpu"
-        )
-        .pip_install("huggingface_hub==0.17.3", "opencv-python-headless"),
+        .pip_install("torch", "torchvision", index_url="https://download.pytorch.org/whl/cpu")
+        .pip_install("huggingface_hub", "opencv-python-headless")
+        .run_commands("git clone https://github.com/LiheYoung/Depth-Anything.git"),
+    metadata=[
+        OnnxRuntimeInferenceMetadata(model=model, model_args=[randn(1, 3, 224, 224)]) # INCOMPLETE # Dynamic shapes??
+    ]
 )
 @inference_mode()
-def estimate_depth(image: Image.Image) -> Tensor:
+def estimate_depth(
+    image: Annotated[Image.Image, Parameter.Generic(description="Input image.")]
+) -> Annotated[ndarray, Parameter.Generic(description="Metric depth tensor with shape (H,W).")]:
     """
-    Estimate metric depth from an image using Depth Anything model.
-
-    Parameters:
-        image (PIL.Image): Input image.
-    
-    Returns:
-        Tensor: Metric depth tensor with shape (H, W).
+    Estimate metric depth from an image using Depth Anything.
     """
     # Preprocess image
-    width, height = image.size
+    src_width, src_height = image.size
+    dst_width, dst_height = _get_resize_dimensions(
+        image,
+        smaller_side_length=518,
+        ensure_multiple_of=14
+    )
     image = image.convert("RGB")
-    image_tensor = F.to_tensor(image)   # (3,H,W)
-    image_tensor = image_tensor[None]   # (1,3,H,W)
-    resized_tensor = _resize_image(image_tensor)
+    image = F.resize(image, (dst_height, dst_width))
+    image_tensor = F.to_tensor(image)
     normalized_tensor = F.normalize(
-        resized_tensor, 
+        image_tensor, 
         mean=[0.485, 0.456, 0.406], 
         std=[0.229, 0.224, 0.225]
     )
-    # Run inference
-    depth_batch = model(normalized_tensor)
-    # Interpolate back to original size
-    depth_batch = interpolate(
-        depth_batch[None],
-        size=(height, width),
-        mode="bilinear",
-        align_corners=False
-    )
-    depth = depth_batch[0,0]
+    # Predict depth
+    depth_batch = model(normalized_tensor[None])
+    # Upsample depth
+    depth_batch = F.resize(depth_batch, (src_height, src_width))
+    depth = depth_batch[0].numpy()
     # Return
     return depth
 
-def _resize_image(
-    image_tensor: Tensor,
-    target_width: int=518,
-    target_height: int=518,
+def _get_resize_dimensions(
+    image: Image.Image,
+    *,
+    smaller_side_length: int=518,
     ensure_multiple_of: int=14
-) -> Tensor:
+) -> tuple[int, int]:
     """
-    Resize image tensor while keeping aspect ratio and ensuring dimensions are multiples of a constant.
+    Calculate target dimensions while maintaining aspect ratio using a default
+    minimum of 518. Dimensions must be evenly divisible by 14.
     """
-    _, _, h, w = image_tensor.shape
-    # Compute lower bound scale factor
-    scale_height = target_height / h
-    scale_width = target_width / w
-    scale = scale_width if scale_width > scale_height else scale_height
-    # Calculate new dimensions
-    new_height = int(scale * h)
-    new_width = int(scale * w)
-    # Ensure dimensions are multiples of ensure_multiple_of
-    new_height = int(ceil(new_height / ensure_multiple_of) * ensure_multiple_of)
-    new_width = int(ceil(new_width / ensure_multiple_of) * ensure_multiple_of)
-    # Ensure we meet minimum size requirements
-    new_height = max(new_height, target_height)
-    new_width = max(new_width, target_width)
-    # Resize using bilinear interpolation
-    resized = interpolate(
-        image_tensor,
-        size=(new_height, new_width),
-        mode="bilinear",
-        align_corners=False
-    )
+    # Aspect scale
+    src_width, src_height = image.size
+    aspect_ratio = src_width / src_height
+    if src_width <= src_height:
+        dst_width = smaller_side_length
+        dst_height = int(smaller_side_length / aspect_ratio)
+    else:
+        dst_height = smaller_side_length
+        dst_width = int(smaller_side_length * aspect_ratio)
+    # Enforce multiple both dimensions
+    dst_width = (dst_width // ensure_multiple_of) * ensure_multiple_of
+    dst_height = (dst_height // ensure_multiple_of) * ensure_multiple_of
     # Return
-    return resized
+    return dst_width, dst_height
 
 def _visualize_depth(depth_tensor: Tensor) -> Image.Image:
     """
@@ -121,7 +116,7 @@ def _visualize_depth(depth_tensor: Tensor) -> Image.Image:
 
 if __name__ == "__main__":
     # Predict metric depth
-    image = Image.open("room.jpg")
+    image = Image.open("compiler/media/city.jpg")
     depth_tensor = estimate_depth(image)
     # Colorize depth tensor and save
     depth_img = _visualize_depth(depth_tensor)
