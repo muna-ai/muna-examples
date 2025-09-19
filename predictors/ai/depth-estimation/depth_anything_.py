@@ -11,7 +11,7 @@
 # dependencies = [
 #     "huggingface_hub",
 #     "muna",
-#     "opencv-python-headless"
+#     "opencv-python-headless",
 #     "torchvision"
 # ]
 # ///
@@ -23,7 +23,7 @@ from numpy import ceil, ndarray, uint8
 from pathlib import Path
 from PIL import Image
 import sys
-from torch import inference_mode, randn, Tensor
+from torch import inference_mode, randn
 from torchvision.transforms import functional as F
 from typing import Annotated
 
@@ -39,7 +39,7 @@ model = DepthAnything.from_pretrained(
 
 @compile(
     tag="@tiktok/depth-anything",
-    description="Estimate metric depth from an image using Depth Anything.",
+    description="Estimate metric depth from an image using Depth Anything (large).",
     access="public",
     sandbox=Sandbox()
         .pip_install("torch", "torchvision", index_url="https://download.pytorch.org/whl/cpu")
@@ -54,7 +54,7 @@ def estimate_depth(
     image: Annotated[Image.Image, Parameter.Generic(description="Input image.")]
 ) -> Annotated[ndarray, Parameter.Generic(description="Metric depth tensor with shape (H,W).")]:
     """
-    Estimate metric depth from an image using Depth Anything.
+    Estimate metric depth from an image using Depth Anything (large).
     """
     # Preprocess image
     src_width, src_height = image.size
@@ -99,8 +99,8 @@ def _get_resize_dimensions(
         dst_height = smaller_side_length
         dst_width = int(smaller_side_length * aspect_ratio)
     # Enforce multiple both dimensions
-    dst_width = (dst_width // ensure_multiple_of) * ensure_multiple_of
-    dst_height = (dst_height // ensure_multiple_of) * ensure_multiple_of
+    dst_width = ceil(dst_width // ensure_multiple_of) * ensure_multiple_of
+    dst_height = ceil(dst_height // ensure_multiple_of) * ensure_multiple_of
     # Return
     return dst_width, dst_height
 
