@@ -19,7 +19,7 @@
 from cv2 import applyColorMap, cvtColor, COLOR_BGR2RGB, COLORMAP_INFERNO
 from muna import compile, Parameter, Sandbox
 from muna.beta import OnnxRuntimeInferenceMetadata
-from numpy import ceil, ndarray, uint8
+from numpy import ndarray, uint8
 from pathlib import Path
 from PIL import Image
 import sys
@@ -38,7 +38,7 @@ model = DepthAnything.from_pretrained(
 ).eval()
 
 @compile(
-    tag="@tiktok/depth-anything",
+    tag="@tiktok/depth-anything-large",
     description="Estimate metric depth from an image using Depth Anything (large).",
     access="public",
     sandbox=Sandbox()
@@ -99,8 +99,8 @@ def _get_resize_dimensions(
         dst_height = smaller_side_length
         dst_width = int(smaller_side_length * aspect_ratio)
     # Enforce multiple both dimensions
-    dst_width = ceil(dst_width // ensure_multiple_of) * ensure_multiple_of
-    dst_height = ceil(dst_height // ensure_multiple_of) * ensure_multiple_of
+    dst_width = (dst_width // ensure_multiple_of) * ensure_multiple_of
+    dst_height = (dst_height // ensure_multiple_of) * ensure_multiple_of
     # Return
     return dst_width, dst_height
 
