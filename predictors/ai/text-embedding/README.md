@@ -3,7 +3,7 @@ This directory contains a few predictors that create embedding vectors from text
 
 ## Running a Text Embedding Sample
 The first step is to run the prediction function directly. First, we recommend installing [uv](https://docs.astral.sh/uv/getting-started/installation/) as it simplifies working with Python dependencies. Once `uv` is installed, you can run 
-any of the pose detection predictors by simply executing the script directly:
+any of the text embedding predictors by simply executing the script directly:
 ```bash
 # Run this in Terminal
 $ uv run predictors/ai/text-embedding/embedding_gemma.py
@@ -13,7 +13,7 @@ $ uv run predictors/ai/text-embedding/embedding_gemma.py
 
 ## Compiling the Predictor
 Once you have chosen a text embedding predictor to use in your application, first update the predictor tag of the 
-detection function with your Muna username:
+embedding function with your Muna username:
 ```diff
 # Define predictor
 @compile(
@@ -32,6 +32,9 @@ $ muna compile --overwrite predictors/ai/text-embedding/embedding_gemma.py
 ```
 
 Muna will generate and compile a self-contained executable binary that generates embeddings from input text.
+
+> [!TIP]
+> You can also use pre-compiled text-to-speech predictors on [Muna](https://muna.ai/explore).
 
 ## Running the Predictor
 Once compiled, you can run the predictor on any device using our client libraries. For example, run the predictor in 
