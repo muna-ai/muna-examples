@@ -161,10 +161,13 @@ def _create_detection(
     )
     return detection
 
-def _render_detections(
+def _visualize_detections(
     image: Image.Image,
     detections: list[Detection]
 ) -> Image.Image:
+    """
+    Visualize detection results on an image.
+    """
     image = image.convert("RGB")
     image_tensor = F.to_tensor(image)
     boxes_cxcywh = tensor([[
@@ -197,5 +200,5 @@ if __name__ == "__main__":
     # Print detections
     print_json(data=[det.model_dump() for det in detections])
     # Show annotated image
-    annotated_image = _render_detections(image, detections)
+    annotated_image = _visualize_detections(image, detections)
     annotated_image.show()

@@ -165,7 +165,7 @@ def _visualize_detections(
     detections: list[Detection]
 ) -> Image.Image:
     """
-    Visualize detections.
+    Visualize detection results on an image.
     """
     image = image.convert("RGB")
     image_tensor = F.to_tensor(image)
