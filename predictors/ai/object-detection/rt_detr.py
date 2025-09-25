@@ -123,7 +123,7 @@ def _visualize_detections(
 if __name__ == "__main__":
     from rich import print_json
     # Detect objects
-    image = Image.open("test/media/cats.jpg")
+    image = Image.open("media/cats.jpg")
     detections = detect_objects(image, min_confidence=0.5)
     # Print detections
     print_json(data=[det.model_dump() for det in detections])
