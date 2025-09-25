@@ -3,6 +3,18 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "faster_coco_eval",
+#     "muna",
+#     "rich",
+#     "scipy",
+#     "tensorboard",
+#     "torchvision"
+# ]
+# ///
+
 from muna import compile, Parameter, Sandbox
 from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
@@ -57,9 +69,10 @@ def detect_objects(
     """
     width, height = image.size
     # Preprocess image
-    resized_image = F.resize(image, (INPUT_SIZE, INPUT_SIZE))
+    image = F.resize(image, (INPUT_SIZE, INPUT_SIZE))
+    image = image.convert("RGB")
     # Convert to tensor and add 1 (batch) dimension
-    input_tensor = F.to_tensor(resized_image)
+    input_tensor = F.to_tensor(image)
     orig_target_sizes = tensor([width, height]).float()
     # Run model
     predictions = model(input_tensor[None], orig_target_sizes[None])
