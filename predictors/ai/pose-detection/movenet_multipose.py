@@ -29,18 +29,18 @@ KEYPOINTS = [
     "left_knee", "right_knee", "left_ankle", "right_ankle"
 ]
 
-class Rect (BaseModel):
+class Rect(BaseModel):
     x: float = Field(description="Normalized minimum point X coordinate.")
     y: float = Field(description="Normalized minimum point Y coordinate.")
     width: float = Field(description="Normalized width.")
     height: float = Field(description="Normalized height.")
 
-class Keypoint (BaseModel):
+class Keypoint(BaseModel):
     x: float = Field("Normalized X position.")
     y: float = Field("Normalized Y position.")
     score: float = Field("Confidence score in range [0, 1].")
 
-class Pose (BaseModel):
+class Pose(BaseModel):
     score: float = Field(description="Pose confidence score in range [0, 1].")
     rect: Rect = Field(description="Detected person normalized bounding (x_min,y_min,x_max,y_max) rectangle.")
     nose: Keypoint = Field(description="Nose normalized coordinates and score.")
@@ -68,14 +68,14 @@ model = InferenceSession(model_path.name if not model_path.exists() else model_p
     tag="@yusuf/movenet-multipose",
     description="Detect human poses in an image with MoveNet Multipose.",
     sandbox=Sandbox()
-        .pip_install("onnxruntime")
         .pip_install("torchvision", index_url="https://download.pytorch.org/whl/cpu")
+        .pip_install("onnxruntime")
         .upload_file(model_path),
     metadata=[
         OnnxRuntimeInferenceSessionMetadata(session=model, model_path=model_path.name)
     ]
 )
-def detect_poses (image: Image.Image, min_score: float=0.3) -> list[Pose]:
+def detect_poses(image: Image.Image, min_score: float=0.3) -> list[Pose]:
     # Preprocess image
     image_rgb = image.convert("RGB")
     image_resized = F.resize(image_rgb, [192, 192])
@@ -90,7 +90,7 @@ def detect_poses (image: Image.Image, min_score: float=0.3) -> list[Pose]:
     # Return
     return poses
 
-def _parse_pose (data: ndarray) -> Pose:
+def _parse_pose(data: ndarray) -> Pose:
     """
     Parse a pose vector with shape (56,)
     """

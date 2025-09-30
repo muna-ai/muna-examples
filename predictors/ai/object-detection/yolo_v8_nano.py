@@ -13,7 +13,7 @@
 # ]
 # ///
 
-from muna import compile, Sandbox
+from muna import compile, Parameter, Sandbox
 from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
 from pydantic import BaseModel, Field
@@ -22,6 +22,7 @@ from torch.nn import Module
 from torchvision.ops import batched_nms, box_convert
 from torchvision.transforms import functional as F
 from torchvision.utils import draw_bounding_boxes
+from typing import Annotated
 from ultralytics import YOLO
 
 class Detection(BaseModel):
@@ -57,21 +58,13 @@ model(*model_args)
 )
 @inference_mode()
 def detect_objects(
-    image: Image.Image,
+    image: Annotated[Image.Image, Parameter.Generic(description="Input image.")],
     *,
-    min_confidence: float=0.25,
-    max_iou: float=0.45
-) -> list[Detection]:
+    min_confidence: Annotated[float, Parameter.Numeric(description="Minimum detection confidence.", range=[0., 1.])]=0.25,
+    max_iou: Annotated[float, Parameter.Numeric(description="Maximum intersection-over-union score before discarding smaller detections.", range=[0., 1.])]=0.45
+) -> Annotated[list[Detection], Parameter.Generic(description="Detected objects.")]:
     """
     Detect objects in an image with YOLO-v8 (nano).
-
-    Parameters:
-        image (PIL.Image): Input image.
-        min_confidence (float): Minimum detection confidence.
-        max_iou (float): Maximum intersection-over-union score before discarding smaller detections.
-
-    Returns:
-        list: Detected objects.
     """
     # Preprocess
     image_tensor, scale_factors = _preprocess_image(image, input_size=INPUT_SIZE)

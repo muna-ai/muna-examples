@@ -13,7 +13,7 @@
 # ]
 # ///
 
-from muna import compile, Sandbox
+from muna import compile, Parameter, Sandbox
 from muna.beta import OnnxRuntimeInferenceMetadata
 from numpy import bool_
 from numpy.typing import NDArray
@@ -25,6 +25,7 @@ from torch.nn.functional import interpolate
 from torchvision.ops import batched_nms, box_convert
 from torchvision.transforms import functional as F
 from torchvision.utils import draw_bounding_boxes, draw_segmentation_masks
+from typing import Annotated
 from ultralytics import YOLO
 
 class Detection(BaseModel):    
@@ -67,7 +68,7 @@ model(*model_args)
     description="Segment objects in an image with YOLO-v8 (large).",
     access="private", # YOLO-v8 is under AGPL license
     sandbox=Sandbox()
-        .pip_install("torch", "torchvision", index_url="https://download.pytorch.org/whl/cpu")
+        .pip_install("torchvision", index_url="https://download.pytorch.org/whl/cpu")
         .pip_install("ultralytics")
         .pip_install("opencv-python-headless"),
     metadata=[
@@ -76,21 +77,16 @@ model(*model_args)
 )
 @inference_mode()
 def segment_image(
-    image: Image.Image,
+    image: Annotated[Image.Image, Parameter.Generic(description="Input image.")],
     *,
-    min_confidence: float = 0.25,
-    max_iou: float = 0.45
-) -> tuple[list[Detection], NDArray[bool_]]:
+    min_confidence: Annotated[float, Parameter.Numeric(description="Minimum detection confidence.", range=[0., 1.])]=0.25,
+    max_iou: Annotated[float, Parameter.Numeric(description="Maximum intersection-over-union score before discarding smaller detections.", range=[0., 1.])]=0.45
+) -> tuple[
+    Annotated[list[Detection], Parameter.Generic(description="Detected objects.")],
+    Annotated[NDArray[bool_], Parameter.Generic(description="Segmentation masks with shape (M,H,W).")]
+]:
     """
     Segment objects in an image with YOLO-v8 (large).
-
-    Parameters:
-        image (PIL.Image): Input image.
-        min_confidence (float): Minimum detection confidence.
-        max_iou (float): Maximum intersection-over-union score before discarding smaller detections.
-
-    Returns:
-        tuple: Detected objects along with corresponding segmentation masks (in order).
     """
     # Preprocess
     image_tensor, scale_factors = _preprocess_image(image, input_size=INPUT_SIZE)

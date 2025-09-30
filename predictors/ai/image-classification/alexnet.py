@@ -12,12 +12,13 @@
 # ]
 # ///
 
-from muna import compile, Sandbox
+from muna import compile, Parameter, Sandbox
 from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
-from torch import randn, argmax, softmax
+from torch import randn, argmax, inference_mode, softmax
 from torchvision.models import alexnet, AlexNet_Weights
 from torchvision.transforms.functional import center_crop, normalize, resize, to_tensor
+from typing import Annotated
 
 weights = AlexNet_Weights.DEFAULT
 model = alexnet(weights=weights).eval()
@@ -25,6 +26,7 @@ model = alexnet(weights=weights).eval()
 @compile(
     tag="@pytorch/alexnet",
     description="Classify an image with AlexNet.",
+    access="public",
     sandbox=Sandbox().pip_install("torchvision", index_url="https://download.pytorch.org/whl/cpu"),
     metadata=[
         OnnxRuntimeInferenceMetadata(
@@ -33,16 +35,15 @@ model = alexnet(weights=weights).eval()
         )
     ]
 )
-def classify_image(image: Image.Image) -> tuple[str, float]:
+@inference_mode()
+def classify_image(
+    image: Annotated[Image.Image, Parameter.Generic(description="Input image.")]
+) -> tuple[
+    Annotated[str, Parameter.Generic(description="Classification label.")],
+    Annotated[float, Parameter.Numeric(description="Classification score.", range=(0., 1.))]
+]:
     """
-    Classify an image using AlexNet
-
-    Parameters:
-        image (PIL.Image): Input image.
-
-    Returns:
-        str: Classification label.
-        float: Classification score.
+    Classify an image with AlexNet.
     """
     # Preprocess image
     image = image.convert("RGB")
@@ -56,6 +57,7 @@ def classify_image(image: Image.Image) -> tuple[str, float]:
     )
     # Run model
     logits = model(normalized_tensor[None])
+    # Post-process outputs
     scores = softmax(logits, dim=1)
     idx = argmax(scores, dim=1)
     score = scores[0, idx].item()

@@ -12,12 +12,13 @@
 # ]
 # ///
 
-from muna import compile, Sandbox
+from muna import compile, Parameter, Sandbox
 from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
 from torch import argmax, inference_mode, softmax, randn
 from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
 from torchvision.transforms import functional as F
+from typing import Annotated
 
 weights = MobileNet_V2_Weights.DEFAULT
 model = mobilenet_v2(weights=weights).eval()
@@ -39,16 +40,14 @@ model = mobilenet_v2(weights=weights).eval()
     ]
 )
 @inference_mode()
-def classify_image(image: Image.Image) -> tuple[str, float]:
+def classify_image(
+    image: Annotated[Image.Image, Parameter.Generic(description="Input image.")]
+) -> tuple[
+    Annotated[str, Parameter.Generic(description="Classification label.")],
+    Annotated[float, Parameter.Numeric(description="Classification score.", range=(0., 1.))]
+]:
     """
     Classify an image with MobileNet v2.
-    
-    Parameters:
-        image (PIL.Image): Input image.
-
-    Returns:
-        str: Classification label.
-        float: Classification score.
     """
     # Preprocess
     image = image.convert("RGB")
@@ -62,7 +61,7 @@ def classify_image(image: Image.Image) -> tuple[str, float]:
     )
     # Run model
     logits = model(normalized_tensor[None])
-    # Postprocess
+    # Post-process outputs
     scores = softmax(logits, dim=1)
     idx = argmax(scores, dim=1)
     score = scores[0,idx].item()

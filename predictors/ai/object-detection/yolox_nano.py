@@ -17,7 +17,7 @@
 # ]
 # ///
 
-from muna import compile, Sandbox
+from muna import compile, Parameter, Sandbox
 from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
 from pydantic import BaseModel, Field
@@ -28,6 +28,7 @@ from torchvision.models.detection import FasterRCNN_ResNet50_FPN_Weights
 from torchvision.ops import nms, box_convert
 from torchvision.transforms import functional as F
 from torchvision.utils import draw_bounding_boxes
+from typing import Annotated
 
 class Detection (BaseModel):
     x_center: float = Field(description="Normalized bounding box center X-coordinate.")
@@ -62,21 +63,13 @@ labels = [label for label in labels if label not in ("__background__", "N/A")]
 )
 @inference_mode()
 def detect_objects(
-    image: Image.Image,
+    image: Annotated[Image.Image, Parameter.Generic(description="Input image.")],
     *,
-    min_confidence: float=0.4,
-    max_iou: float=0.1
+    min_confidence: Annotated[float, Parameter.Numeric(description="Minimum detection confidence.", range=[0., 1.])]=0.4,
+    max_iou: Annotated[float, Parameter.Numeric(description="Maximum intersection-over-union score before discarding smaller detections.", range=[0., 1.])]=0.1
 ) -> list[Detection]:
     """
     Detect objects in an image with YOLOX (nano).
-
-    Parameters:
-        image (PIL.Image): Input image.
-        min_confidence (float): Minimum detection confidence.
-        max_iou (float): Maximum intersection-over-union score before discarding smaller detections.
-
-    Returns:
-        list: Detected objects.
     """
     # Preprocess image
     image_tensor, scale_factors = _preprocess_image(image, input_size=INPUT_SIZE)

@@ -13,7 +13,7 @@
 # ]
 # ///
 
-from muna import compile, Sandbox
+from muna import compile, Parameter, Sandbox
 from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
 from pydantic import BaseModel, Field
@@ -22,6 +22,7 @@ from torch.nn import Module
 from torchvision.ops import box_convert, nms
 from torchvision.transforms import functional as F
 from torchvision.utils import draw_bounding_boxes
+from typing import Annotated
 from ultralytics import YOLO
 
 KEYPOINT_NAMES = [
@@ -70,28 +71,20 @@ model(*model_args)
 )
 @inference_mode()
 def detect_poses(
-    image: Image.Image,
+    image: Annotated[Image.Image, Parameter.Generic(description="Input image.")],
     *,
-    min_confidence: float=0.25,
-    max_iou: float=0.25
-) -> list[Pose]:
+    min_confidence: Annotated[float, Parameter.Numeric(description="Minimum detection confidence.", range=[0., 1.])]=0.25,
+    max_iou: Annotated[float, Parameter.Numeric(description="Maximum intersection-over-union score before discarding smaller detections.", range=[0., 1.])]=0.25
+) -> Annotated[list[Pose], Parameter.Generic(description="Detected poses.")]:
     """
     Perform pose detection in an image with YOLO-v8 (xlarge).
-
-    Parameters:
-        image (PIL.Image): Input image.
-        min_confidence (float): Minimum detection confidence.
-        max_iou (float): Maximum intersection-over-union score.
-
-    Returns:
-        list: Detected poses.
     """
     image_tensor, box_scale_factors, keypoint_scale_factors = _preprocess_image(image, input_size=640)
-    model_outputs = model(image_tensor[None])[0]    # (1,4+1+P,8400)
-    logits = model_outputs[0].T                     # (8400,4+1+P)
-    boxes_cxcywh = logits[:,:4]                     # (8400,4)
-    max_scores = logits[:,4]                        # (8400,)
-    keypoints = logits[:,5:].reshape(-1, 17, 3)     # (8400,51) -> (8400,17,3)
+    model_outputs: Tensor = model(image_tensor[None])[0]    # (1,4+1+P,8400)
+    logits = model_outputs[0].T                             # (8400,4+1+P)
+    boxes_cxcywh = logits[:,:4]                             # (8400,4)
+    max_scores = logits[:,4]                                # (8400,)
+    keypoints = logits[:,5:].reshape(-1, 17, 3)             # (8400,51) -> (8400,17,3)
     # Filter by score
     confidence_mask = max_scores >= min_confidence
     filtered_boxes = boxes_cxcywh[confidence_mask] * box_scale_factors

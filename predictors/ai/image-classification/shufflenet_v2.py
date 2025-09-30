@@ -12,12 +12,13 @@
 # ]
 # ///
 
-from muna import compile, Sandbox
+from muna import compile, Parameter, Sandbox
 from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
-from torch import randn, argmax, softmax
+from torch import argmax, inference_mode, randn, softmax
 from torchvision.models import shufflenet_v2_x2_0, ShuffleNet_V2_X2_0_Weights
 from torchvision.transforms.functional import center_crop, normalize, resize, to_tensor
+from typing import Annotated
 
 weights = ShuffleNet_V2_X2_0_Weights.DEFAULT
 model = shufflenet_v2_x2_0(weights=weights).eval()
@@ -34,16 +35,15 @@ model = shufflenet_v2_x2_0(weights=weights).eval()
         )
     ]
 )
-def classify_image(image: Image.Image) -> tuple[str, float]:
+@inference_mode()
+def classify_image(
+    image: Annotated[Image.Image, Parameter.Generic(description="Input image.")]
+) -> tuple[
+    Annotated[str, Parameter.Generic(description="Classification label.")],
+    Annotated[float, Parameter.Numeric(description="Classification score.", range=(0., 1.))]
+]:
     """
     Classify an image with ShuffleNet V2 (2.0x).
-
-    Parameters:
-        image (PIL.Image): Input image.
-
-    Returns:
-        str: Classification label.
-        float: Classification score.
     """
     # Preprocess image
     image = image.convert("RGB")
@@ -57,6 +57,7 @@ def classify_image(image: Image.Image) -> tuple[str, float]:
     )
     # Run model
     logits = model(normalized_tensor[None])
+    # Post-process outputs
     scores = softmax(logits, dim=1)
     idx = argmax(scores, dim=1)
     score = scores[0, idx].item()

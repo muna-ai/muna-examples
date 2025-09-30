@@ -12,12 +12,13 @@
 # ]
 # ///
 
-from muna import compile, Sandbox
+from muna import compile, Parameter, Sandbox
 from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
-from torch import argmax, randn, softmax
+from torch import argmax, inference_mode, randn, softmax
 from torchvision.models import resnet50, ResNet50_Weights
 from torchvision.transforms import functional as F
+from typing import Annotated
 
 weights = ResNet50_Weights.DEFAULT
 model = resnet50(weights=weights).eval()
@@ -26,11 +27,7 @@ model = resnet50(weights=weights).eval()
     tag="@pytorch/resnet-50",
     description="Classify an image with ResNet-50.",
     access="public",
-    sandbox=Sandbox().pip_install(
-        "torch==2.6.0",
-        "torchvision==0.21",
-        index_url="https://download.pytorch.org/whl/cpu"
-    ),
+    sandbox=Sandbox().pip_install("torchvision", index_url="https://download.pytorch.org/whl/cpu"),
     metadata=[
         OnnxRuntimeInferenceMetadata(
             model=model,
@@ -38,13 +35,15 @@ model = resnet50(weights=weights).eval()
         ),
     ]
 )
-def classify_image(image: Image.Image) -> tuple[str, float]:
+@inference_mode()
+def classify_image(
+    image: Annotated[Image.Image, Parameter.Generic(description="Input image.")]
+) -> tuple[
+    Annotated[str, Parameter.Generic(description="Classification label.")],
+    Annotated[float, Parameter.Numeric(description="Classification score.", range=(0., 1.))]
+]:
     """
     Classify an image with ResNet-50.
-
-    Returns:
-        str: Classification label.
-        float: Classification score.
     """
     # Preprocess
     image = image.convert("RGB")
@@ -58,7 +57,7 @@ def classify_image(image: Image.Image) -> tuple[str, float]:
     )
     # Run model
     logits = model(normalized_tensor[None])
-    # Postprocess
+    # Post-process outputs
     scores = softmax(logits, dim=1)
     idx = argmax(scores, dim=1)
     score = scores[0, idx].item()
