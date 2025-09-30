@@ -46,6 +46,7 @@ class Detection(BaseModel):
 @compile(
     tag="@baidu/rt-detr",
     description="Detect objects in an image with RT-DETR.",
+    access="public",
     sandbox=Sandbox()
         .pip_install("torch", "torchvision", index_url="https://download.pytorch.org/whl/cpu")
         .pip_install("faster_coco_eval", "tensorboard", "scipy"),
@@ -57,8 +58,7 @@ class Detection(BaseModel):
                 tensor([INPUT_SIZE, INPUT_SIZE]).float()[None]
             ]
         )
-    ],
-    access="public"
+    ]
 )
 def detect_objects(
     image: Annotated[Image.Image, Parameter.Generic(description="Input image.")],
