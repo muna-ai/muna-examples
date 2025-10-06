@@ -72,19 +72,19 @@ IPA_CODE_MAP = _create_word_index_dictionary()
 @compile(
     tag="@kitten-ml/kitten-tts",
     description="Perform text-to-speech with Kitten TTS.",
+    access="public",
     sandbox=Sandbox().pip_install("huggingface_hub", "onnxruntime"),
     metadata=[
         OnnxRuntimeInferenceSessionMetadata(session=kitten_model, model_path=kitten_model_path),
         OnnxRuntimeInferenceSessionMetadata(session=byt5_model, model_path=byt5_model_path),
-    ],
-    access="public"
+    ]
 )
 def generate_speech(
     text: Annotated[str, Parameter.Generic(description="Text to generate speech from.")],
     *,
-    language: Annotated[GenerationLanguage, Parameter.Generic(description="Generation language.")],
-    voice: Annotated[GenerationVoice, Parameter.Generic(description="Generation voice.")],
-    speed: Annotated[float, Parameter.Numeric(description="Voice speed multiplier.", range=(0., 2.))]
+    voice: Annotated[GenerationVoice, Parameter.AudioVoice(description="Generation voice.")],
+    language: Annotated[GenerationLanguage, Parameter.Generic(description="Generation language.")] = "en-US",
+    speed: Annotated[float, Parameter.AudioSpeed(description="Voice speed multiplier.", min=0.25, max=2.)] = 1.
 ) -> Annotated[
         ndarray,
         Parameter.Audio(

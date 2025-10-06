@@ -30,7 +30,7 @@ from torchvision.transforms import functional as F
 from torchvision.utils import draw_bounding_boxes
 from typing import Annotated
 
-class Detection (BaseModel):
+class Detection(BaseModel):
     x_center: float = Field(description="Normalized bounding box center X-coordinate.")
     y_center: float = Field(description="Normalized bounding box center Y-coordinate.")
     width: float = Field(description="Normalized bounding box width.")
@@ -50,7 +50,7 @@ labels = [label for label in labels if label not in ("__background__", "N/A")]
 @compile(
     tag="@megvii/yolox-nano",
     description="Detect objects in an image with YOLOX (nano).",
-    access="public",
+    access="unlisted",
     sandbox=Sandbox()
         .pip_install("torchvision", index_url="https://download.pytorch.org/whl/cpu")
         .pip_install("loguru", "opencv-python-headless", "psutil", "tabulate"),
@@ -65,9 +65,18 @@ labels = [label for label in labels if label not in ("__background__", "N/A")]
 def detect_objects(
     image: Annotated[Image.Image, Parameter.Generic(description="Input image.")],
     *,
-    min_confidence: Annotated[float, Parameter.Numeric(description="Minimum detection confidence.", range=[0., 1.])]=0.4,
-    max_iou: Annotated[float, Parameter.Numeric(description="Maximum intersection-over-union score before discarding smaller detections.", range=[0., 1.])]=0.1
-) -> list[Detection]:
+    min_confidence: Annotated[
+        float,
+        Parameter.Numeric(description="Minimum detection confidence.", min=0., max=1.)
+    ]=0.4,
+    max_iou: Annotated[
+        float,
+        Parameter.Numeric(description="Maximum intersection-over-union score to discard smaller detections.", min=0., max=1.)
+    ]=0.1
+) -> Annotated[
+    list[Detection],
+    Parameter.BoundingBoxes(description="Detected objects.")
+]:
     """
     Detect objects in an image with YOLOX (nano).
     """

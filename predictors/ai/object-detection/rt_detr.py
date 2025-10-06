@@ -62,8 +62,15 @@ class Detection(BaseModel):
 )
 def detect_objects(
     image: Annotated[Image.Image, Parameter.Generic(description="Input image.")],
-    min_confidence: Annotated[float, Parameter.Generic(description="Minimum detection confidence.")]
-) -> Annotated[list[Detection], Parameter.Generic(description="Detected objects.")]:
+    *,
+    min_confidence: Annotated[
+        float,
+        Parameter.Numeric(description="Minimum detection confidence.", min=0., max=1.)
+    ]
+) -> Annotated[
+    list[Detection],
+    Parameter.BoundingBoxes(description="Detected objects.")
+]:
     """
     Detect objects in an image with RT-DETR.
     """

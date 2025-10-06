@@ -65,15 +65,25 @@ tokenizer = AutoTokenizer.from_pretrained(model_id)
 @compile(
     tag="@google/embedding-gemma",
     description="Create embedding vectors from text with EmbeddingGemma.",
+    access="public",
     sandbox=Sandbox().pip_install("huggingface_hub", "onnx", "onnxruntime", "transformers"),
     metadata=[
         OnnxRuntimeInferenceSessionMetadata(session=model, model_path=model_path),
     ]
 )
 def compute_embeddings(
-    texts: Annotated[list[str], Parameter.Generic(description="Input texts to embed.")],
-    task: Annotated[TaskType, Parameter.Generic(description="Embedding task type.")]
-) -> Annotated[ndarray, Parameter.Embedding(description="Embedding matrix with shape (N,768).")]:
+    texts: Annotated[
+        list[str],
+        Parameter.Generic(description="Input texts to embed.")
+    ],
+    task: Annotated[
+        TaskType,
+        Parameter.Generic(description="Embedding task type.")
+    ] = "document"
+) -> Annotated[
+    ndarray,
+    Parameter.Embedding(description="Embedding matrix with shape (N,768).")
+]:
     """
     Create embedding vectors from text with EmbeddingGemma.
     """
