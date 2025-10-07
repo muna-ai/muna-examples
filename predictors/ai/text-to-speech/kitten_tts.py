@@ -82,9 +82,18 @@ IPA_CODE_MAP = _create_word_index_dictionary()
 def generate_speech(
     text: Annotated[str, Parameter.Generic(description="Text to generate speech from.")],
     *,
-    voice: Annotated[GenerationVoice, Parameter.AudioVoice(description="Generation voice.")],
-    language: Annotated[GenerationLanguage, Parameter.Generic(description="Generation language.")] = "en-US",
-    speed: Annotated[float, Parameter.AudioSpeed(description="Voice speed multiplier.", min=0.25, max=2.)] = 1.
+    voice: Annotated[
+        GenerationVoice,
+        Parameter.AudioVoice(description="Generation voice.")
+    ],
+    language: Annotated[
+        GenerationLanguage,
+        Parameter.Generic(description="Generation language.")
+    ] = "en-US",
+    speed: Annotated[
+        float,
+        Parameter.AudioSpeed(description="Voice speed multiplier.", min=0.25, max=2.)
+    ] = 1.
 ) -> Annotated[
         ndarray,
         Parameter.Audio(
@@ -124,7 +133,7 @@ def _convert_to_ipa(
     Convert a string to an IPA string with ByT5-G2P.
     """
     # Tokenize input
-    prompt = f"{language}: {text}"
+    prompt = f"<{language}>: {text}"
     num_special_tokens = 3
     input_ids = array([list(prompt.encode())]) + num_special_tokens
     attention_mask = ones_like(input_ids)
@@ -153,10 +162,10 @@ def _convert_to_ipa(
 if __name__ == "__main__":
     import sounddevice as sd
     audio = generate_speech(
-        text="This speech was generated with Muna.",
+        text="Kitten is such an odd model.",
         language="<en-US>",
-        voice="expr-voice-3-f",
-        speed=0.9,
+        voice="expr-voice-3-m",
+        speed=1.0025,
     )
     sd.play(audio, samplerate=24_000)
     sd.wait()
