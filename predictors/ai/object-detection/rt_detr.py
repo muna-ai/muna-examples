@@ -19,7 +19,7 @@ from muna import compile, Parameter, Sandbox
 from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
 from pydantic import BaseModel, Field
-from torch import hub, tensor, randn
+from torch import hub, inference_mode, tensor, randn
 from torch.nn import Module
 from torchvision.models.detection import FasterRCNN_ResNet50_FPN_Weights
 from torchvision.transforms import functional as F
@@ -60,6 +60,7 @@ class Detection(BaseModel):
         )
     ]
 )
+@inference_mode()
 def detect_objects(
     image: Annotated[Image.Image, Parameter.Generic(description="Input image.")],
     *,
