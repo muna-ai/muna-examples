@@ -121,21 +121,26 @@ def detect_objects(
 def _preprocess_image(
     image: Image.Image,
     *,
-    input_size: int
+    input_size: int,
+    ensure_multiple_of: int=32,
+    fill: int=114
 ) -> tuple[Tensor, Tensor]:
     """
     Preprocess an image for inference by downscaling and padding it to have a square aspect.
     """
-    # Compute scaled size and padding
+    # Compute scaled size
     image_width, image_height = image.size
     ratio = min(input_size / image_width, input_size / image_height)
     scaled_width = int(image_width * ratio)
     scaled_height = int(image_height * ratio)
-    image_padding = [0, 0, input_size - scaled_width, input_size - scaled_height]
+    # Compute padding
+    x_pad = (input_size - scaled_width) % ensure_multiple_of
+    y_pad = (input_size - scaled_height) % ensure_multiple_of
+    padding = [0, 0, x_pad, y_pad]
     # Downscale and pad image
     image = image.convert("RGB")
     image = F.resize(image, [scaled_height, scaled_width])
-    image = F.pad(image, image_padding, fill=114)
+    image = F.pad(image, padding, fill=fill)
     # Create tensors
     image_tensor = F.to_tensor(image)
     scaled_sizes = tensor([scaled_width, scaled_height, scaled_width, scaled_height])
