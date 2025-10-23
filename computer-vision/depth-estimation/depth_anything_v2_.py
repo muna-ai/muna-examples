@@ -51,13 +51,17 @@ model.eval()
         .pip_install("huggingface_hub", "opencv-python-headless")
         .run_commands("git clone https://github.com/DepthAnything/Depth-Anything-V2.git"),
     metadata=[
-        OnnxRuntimeInferenceMetadata(model=model, model_args=[randn(1, 3, 224, 224)]) # INCOMPLETE # Dynamic shapes??
+        OnnxRuntimeInferenceMetadata(
+            model=model,
+            model_args=[randn(1, 3, 224, 224)],
+            input_shapes=[(1, 3, "height", "width")]
+        )
     ]
 )
 @inference_mode()
 def estimate_depth(
     image: Annotated[Image.Image, Parameter.Generic(description="Input image.")]
-) -> Annotated[ndarray, Parameter.Generic(description="Metric depth tensor with shape (H,W).")]:
+) -> Annotated[ndarray, Parameter.DepthMap(description="Metric depth tensor with shape (H,W).")]:
     """
     Estimate metric depth from an image with Depth Anything V2 (small).
     """

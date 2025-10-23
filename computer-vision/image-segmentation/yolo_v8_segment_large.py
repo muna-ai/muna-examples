@@ -79,8 +79,16 @@ model(*model_args)
 def segment_image(
     image: Annotated[Image.Image, Parameter.Generic(description="Input image.")],
     *,
-    min_confidence: Annotated[float, Parameter.Numeric(description="Minimum detection confidence.", range=[0., 1.])]=0.25,
-    max_iou: Annotated[float, Parameter.Numeric(description="Maximum intersection-over-union score before discarding smaller detections.", range=[0., 1.])]=0.45
+    min_confidence: Annotated[float, Parameter.Numeric(
+        description="Minimum detection confidence.",
+        min=0.,
+        max=1.
+    )]=0.25,
+    max_iou: Annotated[float, Parameter.Numeric(
+        description="Maximum intersection-over-union score before discarding smaller detections.",
+        min=0.,
+        max=1.
+    )]=0.45
 ) -> tuple[
     Annotated[list[Detection], Parameter.Generic(description="Detected objects.")],
     Annotated[NDArray[bool_], Parameter.Generic(description="Segmentation masks with shape (M,H,W).")]

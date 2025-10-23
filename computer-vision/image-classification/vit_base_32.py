@@ -40,7 +40,7 @@ def classify_image(
     image: Annotated[Image.Image, Parameter.Generic(description="Input image.")]
 ) -> tuple[
     Annotated[str, Parameter.Generic(description="Classification label.")],
-    Annotated[float, Parameter.Numeric(description="Classification score.", range=(0., 1.))]
+    Annotated[float, Parameter.Generic(description="Classification score.")]
 ]:
     """
     Classify an image with Vision Transformer (base/32).

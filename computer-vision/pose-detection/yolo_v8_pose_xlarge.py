@@ -73,9 +73,17 @@ model(*model_args)
 def detect_poses(
     image: Annotated[Image.Image, Parameter.Generic(description="Input image.")],
     *,
-    min_confidence: Annotated[float, Parameter.Numeric(description="Minimum detection confidence.", range=[0., 1.])]=0.25,
-    max_iou: Annotated[float, Parameter.Numeric(description="Maximum intersection-over-union score before discarding smaller detections.", range=[0., 1.])]=0.25
-) -> Annotated[list[Pose], Parameter.Generic(description="Detected poses.")]:
+    min_confidence: Annotated[float, Parameter.Numeric(
+        description="Minimum detection confidence.",
+        min=0.,
+        max=1.
+    )]=0.25,
+    max_iou: Annotated[float, Parameter.Numeric(
+        description="Maximum intersection-over-union score before discarding smaller detections.",
+        min=0.,
+        max=1.
+    )]=0.25
+) -> Annotated[list[Pose], Parameter.BoundingBoxes(description="Detected poses.")]:
     """
     Perform pose detection in an image with YOLO-v8 (xlarge).
     """
@@ -115,7 +123,7 @@ def detect_poses(
     ]
     # Return
     return poses
-    
+
 def _preprocess_image(
     image: Image.Image,
     *,

@@ -60,18 +60,17 @@ model(*model_args)
 def detect_objects(
     image: Annotated[Image.Image, Parameter.Generic(description="Input image.")],
     *,
-    min_confidence: Annotated[
-        float,
-        Parameter.Numeric(description="Minimum detection confidence.", min=0., max=1.)
-    ]=0.25,
-    max_iou: Annotated[
-        float,
-        Parameter.Numeric(description="Maximum intersection-over-union score to discard smaller detections.", min=0., max=1.)
-    ]=0.45
-) -> Annotated[
-    list[Detection],
-    Parameter.BoundingBoxes(description="Detected objects.")
-]:
+    min_confidence: Annotated[float, Parameter.Numeric(
+        description="Minimum detection confidence.",
+        min=0.,
+        max=1.
+    )]=0.25,
+    max_iou: Annotated[float, Parameter.Numeric(
+        description="Maximum intersection-over-union score to discard smaller detections.",
+        min=0.,
+        max=1.
+    )]=0.45
+) -> Annotated[list[Detection], Parameter.BoundingBoxes(description="Detected objects.")]:
     """
     Detect objects in an image with YOLO-v8 (nano).
     """

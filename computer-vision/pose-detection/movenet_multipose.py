@@ -72,7 +72,10 @@ model = InferenceSession(model_path.name if not model_path.exists() else model_p
         .pip_install("onnxruntime")
         .upload_file(model_path),
     metadata=[
-        OnnxRuntimeInferenceSessionMetadata(session=model, model_path=model_path.name)
+        OnnxRuntimeInferenceSessionMetadata(
+            session=model,
+            model_path=model_path.name
+        )
     ]
 )
 def detect_poses(image: Image.Image, min_score: float=0.3) -> list[Pose]:

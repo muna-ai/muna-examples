@@ -65,18 +65,17 @@ labels = [label for label in labels if label not in ("__background__", "N/A")]
 def detect_objects(
     image: Annotated[Image.Image, Parameter.Generic(description="Input image.")],
     *,
-    min_confidence: Annotated[
-        float,
-        Parameter.Numeric(description="Minimum detection confidence.", min=0., max=1.)
-    ]=0.4,
-    max_iou: Annotated[
-        float,
-        Parameter.Numeric(description="Maximum intersection-over-union score to discard smaller detections.", min=0., max=1.)
-    ]=0.1
-) -> Annotated[
-    list[Detection],
-    Parameter.BoundingBoxes(description="Detected objects.")
-]:
+    min_confidence: Annotated[float, Parameter.Numeric(
+        description="Minimum detection confidence.",
+        min=0.,
+        max=1.
+    )]=0.4,
+    max_iou: Annotated[float, Parameter.Numeric(
+        description="Maximum intersection-over-union score to discard smaller detections.",
+        min=0.,
+        max=1.
+    )]=0.1
+) -> Annotated[list[Detection], Parameter.BoundingBoxes(description="Detected objects.")]:
     """
     Detect objects in an image with YOLOX (nano).
     """
