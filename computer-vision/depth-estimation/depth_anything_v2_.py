@@ -25,6 +25,7 @@ from pathlib import Path
 from PIL import Image
 import sys
 from torch import inference_mode, load as torch_load, randn
+from torch.export import Dim
 from torchvision.transforms import functional as F
 from typing import Annotated
 
@@ -54,7 +55,7 @@ model.eval()
         OnnxRuntimeInferenceMetadata(
             model=model,
             model_args=[randn(1, 3, 224, 224)],
-            input_shapes=[(1, 3, "height", "width")]
+            input_shapes=[(1, 3, 14 * Dim("height_quotient"), 14 * Dim("width_quotient"))]
         )
     ]
 )
