@@ -169,8 +169,8 @@ def _preprocess_image(
     scaled_height = int(image_height * ratio)
     image_padding = [0, 0, input_size - scaled_width, input_size - scaled_height]
     # Downscale and pad image
-    image = image.convert("RGB")
     image = F.resize(image, [scaled_height, scaled_width])
+    image = image.convert("RGB")
     image = F.pad(image, image_padding, fill=114)
     # Create tensors
     image_tensor = F.to_tensor(image)
@@ -297,9 +297,11 @@ def _visualize_detections(
     return F.to_pil_image(result_tensor)
 
 if __name__ == "__main__":
+    from pathlib import Path
     from rich import print_json
     # Segment objects
-    image = Image.open("test/media/fruits.jpg")
+    image_path = Path(__file__).parent / "demo" / "fruits.jpg"
+    image = Image.open(image_path)
     detections, masks = segment_image(image)
     # Print detections
     print_json(data=[det.model_dump() for det in detections])

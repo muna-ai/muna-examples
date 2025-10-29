@@ -6,7 +6,7 @@ The first step is to run the prediction function directly. First, we recommend i
 any of the object detection predictors by simply executing the script directly:
 ```bash
 # Run this in Terminal
-$ uv run predictors/ai/object-detection/yolo_v8_nano.py
+$ uv run object-detection/yolo_v8_nano.py
 ```
 
 `uv` will automatically install any required Python packages then run the script.
@@ -28,10 +28,10 @@ def detect_objects(...) -> list[Detection]:
 Next, compile the Python code with Muna:
 ```bash
 # Run this in Terminal
-$ muna compile --overwrite predictors/ai/object-detection/yolo_v8_nano.py
+$ muna compile --overwrite object-detection/yolo_v8_nano.py
 ```
 
-Muna will generate and compile self-contained, cross-platform code that runs the object detection.
+Muna will generate and compile self-contained, cross-platform code that runs the object detection model.
 
 ## Running the Predictor
 Once compiled, you can run the predictor on any device using our client libraries. For example, run the predictor in 

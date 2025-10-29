@@ -5,11 +5,7 @@
 
 # /// script
 # requires-python = ">=3.11"
-# dependencies = [
-#     "muna",
-#     "rich",
-#     "torchvision",
-# ]
+# dependencies = ["muna", "torchvision"]
 # ///
 
 from muna import compile, Parameter, Sandbox
@@ -46,8 +42,8 @@ def classify_image(
     Classify an image with ResNet-50.
     """
     # Preprocess
-    image = image.convert("RGB")
     image = F.resize(image, 256)
+    image = image.convert("RGB")
     image = F.center_crop(image, 256)
     image_tensor = F.to_tensor(image)
     normalized_tensor = F.normalize(
@@ -66,7 +62,10 @@ def classify_image(
     return label, score
 
 if __name__ == "__main__":
-    import rich
-    image = Image.open("media/cat.jpg")
+    from pathlib import Path
+    # Predict
+    image_path = Path(__file__).parent / "demo" / "cat.jpg"
+    image = Image.open(image_path)
     label, score = classify_image(image)
-    rich.print(label, score)
+    # Print
+    print(label, score)

@@ -5,11 +5,7 @@
 
 # /// script
 # requires-python = ">=3.11"
-# dependencies = [
-#     "muna",
-#     "rich",
-#     "torchvision",
-# ]
+# dependencies = ["muna", "torchvision"]
 # ///
 
 from muna import compile, Parameter, Sandbox
@@ -17,7 +13,7 @@ from muna.beta import OnnxRuntimeInferenceMetadata
 from PIL import Image
 from torch import argmax, inference_mode, randn, softmax
 from torchvision.models import wide_resnet101_2, Wide_ResNet101_2_Weights
-from torchvision.transforms.functional import center_crop, normalize, resize, to_tensor
+from torchvision.transforms import functional as F
 from typing import Annotated
 
 weights = Wide_ResNet101_2_Weights.DEFAULT
@@ -44,20 +40,13 @@ def classify_image(
 ]:
     """
     Classify an image using Wide ResNet-101.
-
-    Parameters:
-        image (PIL.Image): Input image.
-
-    Returns:
-        str: Classification label.
-        float: Classification score.
     """
     # Preprocess image
+    image = F.resize(image, 256)
     image = image.convert("RGB")
-    image = resize(image, 256)
-    image = center_crop(image, 224)
-    image_tensor = to_tensor(image)
-    normalized_tensor = normalize(
+    image = F.center_crop(image, 224)
+    image_tensor = F.to_tensor(image)
+    normalized_tensor = F.normalize(
         image_tensor,
         mean=[0.485, 0.456, 0.406],
         std=[0.229, 0.224, 0.225]
@@ -73,6 +62,10 @@ def classify_image(
     return label, score
 
 if __name__ == "__main__":
-    image = Image.open(f"media/cat.jpg")
+    from pathlib import Path
+    # Predict
+    image_path = Path(__file__).parent / "demo" / "cat.jpg"
+    image = Image.open(image_path)
     label, score = classify_image(image)
+    # Print
     print(label, score)

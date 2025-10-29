@@ -5,11 +5,7 @@
 
 # /// script
 # requires-python = ">=3.11"
-# dependencies = [
-#     "muna",
-#     "rich",
-#     "torchvision",
-# ]
+# dependencies = ["muna", "torchvision"]
 # ///
 
 from muna import compile, Parameter, Sandbox
@@ -66,6 +62,10 @@ def classify_image(
     return label, score
 
 if __name__ == "__main__":
-    image = Image.open(f"media/cat.jpg")
+    from pathlib import Path
+    # Predict
+    image_path = Path(__file__).parent / "demo" / "cat.jpg"
+    image = Image.open(image_path)
     label, score = classify_image(image)
+    # Print
     print(label, score)

@@ -5,12 +5,7 @@
 
 # /// script
 # requires-python = ">=3.11"
-# dependencies = [
-#     "huggingface_hub",
-#     "muna",
-#     "onnxruntime",
-#     "sounddevice"
-# ]
+# dependencies = ["huggingface_hub", "muna", "onnxruntime", "sounddevice"]
 # ///
 
 from huggingface_hub import hf_hub_download

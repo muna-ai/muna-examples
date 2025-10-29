@@ -26,14 +26,5 @@ dist/
 *.dlc
 *.gguf
 
-# Images
-*.png
-*.jpg
-*.jpeg
-*.gif
-!media/**/*.jpg
-!media/**/*.jpeg
-!media/**/*.gif
-
 # Misc
 .DS_Store

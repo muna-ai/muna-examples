@@ -6,7 +6,7 @@ The first step is to run the prediction function directly. First, we recommend i
 any of the image classification predictors by simply executing the script directly:
 ```bash
 # Run this in Terminal
-$ uv run predictors/ai/image-classification/resnet_50.py
+$ uv run image-classification/resnet_50.py
 ```
 
 `uv` will automatically install any required Python packages then run the script.
@@ -28,10 +28,10 @@ def classify(...) -> tuple[str, float]:
 Next, compile the Python code with Muna:
 ```bash
 # Run this in Terminal
-$ muna compile --overwrite predictors/ai/image-classification/resnet_50.py
+$ muna compile --overwrite image-classification/resnet_50.py
 ```
 
-Muna will generate and compile self-contained native code (C++, Rust, etc) that runs the image classification.
+Muna will generate and compile self-contained native code (C++, Rust, etc) that runs the image classification model.
 
 ## Running the Predictor
 Once compiled, you can run the predictor on any device using our client libraries. For example, run the predictor in 

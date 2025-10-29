@@ -5,10 +5,7 @@
 
 # /// script
 # requires-python = ">=3.11"
-# dependencies = [
-#     "muna",
-#     "torchvision"
-# ]
+# dependencies = ["muna", "torchvision"]
 # ///
 
 from muna import compile, Parameter, Sandbox
@@ -47,6 +44,7 @@ def segment_image(
     Segment an image with DeepLab v3.
     """
     # Preprocess image
+    image = image.convert("RGB")
     image_tensor = F.to_tensor(image)
     image_tensor = F.normalize(
         image_tensor,
@@ -92,6 +90,11 @@ def _visualize_segmentation_mask(
     return result
 
 if __name__ == "__main__":
-    image = Image.open("media/runner.jpg")
+    from pathlib import Path
+    # Predict
+    image_path = Path(__file__).parent / "demo" / "runner.jpg"
+    image = Image.open(image_path)
     mask = segment_image(image)
-    _visualize_segmentation_mask(image, mask).show()
+    # Visualize
+    annotated_image = _visualize_segmentation_mask(image, mask)
+    annotated_image.show()

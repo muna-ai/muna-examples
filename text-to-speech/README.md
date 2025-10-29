@@ -6,7 +6,7 @@ The first step is to run the prediction function directly. First, we recommend i
 any of the text-to-speech predictors by simply executing the script directly:
 ```bash
 # Run this in Terminal
-$ uv run predictors/ai/text-to-speech/kitten_tts.py
+$ uv run text-to-speech/kitten_tts.py
 ```
 
 `uv` will automatically install any required Python packages then run the script.
@@ -28,7 +28,7 @@ def generate_speech(...) -> ndarray:
 Next, compile the Python code with Muna:
 ```bash
 # Run this in Terminal
-$ muna compile --overwrite predictors/ai/text-to-speech/kitten_tts.py
+$ muna compile --overwrite text-to-speech/kitten_tts.py
 ```
 
 Muna will generate and compile a self-contained executable binary that generates speech audio from input text.

@@ -121,7 +121,8 @@ def _visualize_depth(depth: ndarray) -> Image.Image:
 
 if __name__ == "__main__":
     # Predict
-    image = Image.open("media/city.jpg")
+    image_path = Path(__file__).parent / "demo" / "city.jpg"
+    image = Image.open(image_path)
     depth = estimate_depth(image)
     # Visualize
     depth_img = _visualize_depth(depth)

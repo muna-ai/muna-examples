@@ -6,7 +6,7 @@ The first step is to run the prediction function directly. First, we recommend i
 any of the image segmentation predictors by simply executing the script directly:
 ```bash
 # Run this in Terminal
-$ uv run predictors/ai/image-segmentation/yolo_v8_segment_large.py
+$ uv run image-segmentation/yolo_v8_segment_large.py
 ```
 
 `uv` will automatically install any required Python packages then run the script.
@@ -28,10 +28,10 @@ def segment_image(...) -> NDArray[bool]:
 Next, compile the Python code with Muna:
 ```bash
 # Run this in Terminal
-$ muna compile --overwrite predictors/ai/image-segmentation/yolo_v8_segment_large.py
+$ muna compile --overwrite image-segmentation/yolo_v8_segment_large.py
 ```
 
-Muna will generate and compile self-contained, cross-platform code that runs the image segmentation.
+Muna will generate and compile self-contained, cross-platform code that runs the image segmentation model.
 
 ## Running the Predictor
 Once compiled, you can run the predictor on any device using our client libraries. For example, run the predictor in 

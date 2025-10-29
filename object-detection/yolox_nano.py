@@ -194,9 +194,11 @@ def _visualize_detections(
     return F.to_pil_image(result_tensor)
 
 if __name__ == "__main__":
+    from pathlib import Path
     from rich import print_json
     # Detect objects
-    image = Image.open("media/vehicles.jpg")
+    image_path = Path(__file__).parent / "demo" / "vehicles.jpg"
+    image = Image.open(image_path)
     detections = detect_objects(image, min_confidence=0.2)
     # Print detections
     print_json(data=[det.model_dump() for det in detections])

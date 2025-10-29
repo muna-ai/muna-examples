@@ -5,12 +5,7 @@
 
 # /// script
 # requires-python = ">=3.11"
-# dependencies = [
-#     "muna",
-#     "onnxruntime",
-#     "rich",
-#     "torchvision"
-# ]
+# dependencies = ["muna", "onnxruntime", "rich", "torchvision"]
 # ///
 
 from muna import compile, Sandbox
@@ -114,7 +109,10 @@ def _parse_pose(data: ndarray) -> Pose:
     return Pose(**pose_dict)
 
 if __name__ == "__main__":
-    import rich
-    image = Image.open("media/metro.jpg")
+    from rich import print_json
+    # Predict
+    image_path = Path(__file__).parent / "demo" / "metro.jpg"
+    image = Image.open(image_path)
     poses = detect_poses(image)
-    rich.print_json(data=[pose.model_dump() for pose in poses])
+    # Print poses
+    print_json(data=[pose.model_dump() for pose in poses])

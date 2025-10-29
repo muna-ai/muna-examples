@@ -6,7 +6,7 @@ The first step is to run the prediction function directly. First, we recommend i
 any of the pose detection predictors by simply executing the script directly:
 ```bash
 # Run this in Terminal
-$ uv run predictors/ai/pose-detection/yolo_v8_pose_xlarge.py
+$ uv run pose-detection/yolo_v8_pose_xlarge.py
 ```
 
 `uv` will automatically install any required Python packages then run the script.
@@ -28,7 +28,7 @@ def detect_poses(...) -> list[Pose]:
 Next, compile the Python code with Muna:
 ```bash
 # Run this in Terminal
-$ muna compile --overwrite predictors/ai/pose-detection/yolo_v8_pose_xlarge.py
+$ muna compile --overwrite pose-detection/yolo_v8_pose_xlarge.py
 ```
 
 Muna will generate and compile self-contained, cross-platform native code that runs the pose detection.

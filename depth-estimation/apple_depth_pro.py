@@ -3,6 +3,17 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "huggingface_hub",
+#     "muna",
+#     "onnxruntime",
+#     "opencv-python-headless",
+#     "torchvision"
+# ]
+# ///
+
 from cv2 import applyColorMap, cvtColor, COLOR_BGR2RGB, COLORMAP_INFERNO
 from huggingface_hub import hf_hub_download
 from muna import compile, Parameter, Sandbox
@@ -75,8 +86,10 @@ def _visualize_depth(depth: ndarray) -> Image.Image:
     return Image.fromarray(depth_colored)
 
 if __name__ == "__main__":
+    from pathlib import Path
     # Predict
-    image = Image.open("media/room.jpg")
+    image_path = Path(__file__).parent / "demo" / "room.jpg"
+    image = Image.open(image_path)
     depth, focal_length = predict_depth(image)
     print(f"Focal length: {focal_length:.1f} pixels. Depth range: {depth.min():.2f}m - {depth.max():.2f}m")
     # Visualize

@@ -6,7 +6,7 @@ The first step is to run the prediction function directly. First, we recommend i
 any of the text embedding predictors by simply executing the script directly:
 ```bash
 # Run this in Terminal
-$ uv run predictors/ai/text-embedding/embedding_gemma.py
+$ uv run text-embedding/embedding_gemma.py
 ```
 
 `uv` will automatically install any required Python packages then run the script.
@@ -28,7 +28,7 @@ def compute_embeddings(...) -> ndarray:
 Next, compile the Python code with Muna:
 ```bash
 # Run this in Terminal
-$ muna compile --overwrite predictors/ai/text-embedding/embedding_gemma.py
+$ muna compile --overwrite text-embedding/embedding_gemma.py
 ```
 
 Muna will generate and compile a self-contained executable binary that generates embeddings from input text.

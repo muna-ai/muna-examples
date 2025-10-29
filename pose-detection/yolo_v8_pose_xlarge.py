@@ -5,12 +5,7 @@
 
 # /// script
 # requires-python = ">=3.11"
-# dependencies = [
-#     "muna",
-#     "rich",
-#     "torchvision",
-#     "ultralytics"
-# ]
+# dependencies = ["muna", "rich", "torchvision", "ultralytics"]
 # ///
 
 from muna import compile, Parameter, Sandbox
@@ -281,13 +276,15 @@ def _visualize_poses(
     return result_image
 
 if __name__ == "__main__":
-    import rich
+    from pathlib import Path
+    from rich import print_json
     # Detect poses
-    image = Image.open("media/metro.jpg")
+    image_path = Path(__file__).parent / "demo" / "metro.jpg"
+    image = Image.open(image_path)
     poses = detect_poses(image)
     # Print detections
     print(f"Detected {len(poses)} poses:")
-    rich.print_json(data=[pose.model_dump() for pose in poses])
+    print_json(data=[pose.model_dump() for pose in poses])
     # Show annotated image
     annotated_image = _visualize_poses(image, poses)
     annotated_image.show()
