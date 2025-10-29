@@ -24,6 +24,7 @@ from pathlib import Path
 from PIL import Image
 import sys
 from torch import inference_mode, randn
+from torch.export import Dim
 from torchvision.transforms import functional as F
 from typing import Annotated
 
@@ -49,7 +50,7 @@ model = DepthAnything.from_pretrained(
         OnnxRuntimeInferenceMetadata(
             model=model,
             model_args=[randn(1, 3, 224, 224)],
-            input_shapes=[(1, 3, "height", "width")]
+            input_shapes=[(1, 3, 14 * Dim("height"), 14 * Dim("width"))]
         )
     ]
 )
@@ -62,11 +63,7 @@ def estimate_depth(
     """
     # Preprocess image
     src_width, src_height = image.size
-    dst_width, dst_height = _get_resize_dimensions(
-        image,
-        smaller_side_length=518,
-        ensure_multiple_of=14
-    )
+    dst_width, dst_height = _get_resize_dimensions(image)
     image = image.convert("RGB")
     image = F.resize(image, (dst_height, dst_width))
     image_tensor = F.to_tensor(image)
