@@ -148,11 +148,13 @@ def _convert_to_ipa(
 
 if __name__ == "__main__":
     import sounddevice as sd
+    # Generate audio
     audio = generate_speech(
         text="Kitten is such an odd model.",
-        language="<en-US>",
+        language="en-US",
         voice="expr-voice-3-m",
         speed=1.0025,
     )
+    # Playback
     sd.play(audio, samplerate=24_000)
     sd.wait()
