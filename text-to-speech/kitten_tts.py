@@ -77,25 +77,17 @@ IPA_CODE_MAP = _create_word_index_dictionary()
 def generate_speech(
     text: Annotated[str, Parameter.Generic(description="Text to generate speech from.")],
     *,
-    voice: Annotated[
-        GenerationVoice,
-        Parameter.AudioVoice(description="Generation voice.")
-    ],
-    language: Annotated[
-        GenerationLanguage,
-        Parameter.Generic(description="Generation language.")
-    ] = "en-US",
-    speed: Annotated[
-        float,
-        Parameter.AudioSpeed(description="Voice speed multiplier.", min=0.25, max=2.)
-    ] = 1.
-) -> Annotated[
-        ndarray,
-        Parameter.Audio(
-            description="Linear PCM audio samples with shape (F,) and sample rate 24KHz.",
-            sample_rate=24_000
-        )
-    ]:
+    voice: Annotated[GenerationVoice, Parameter.AudioVoice(description="Generation voice.")],
+    language: Annotated[GenerationLanguage, Parameter.Generic(description="Generation language.")]="en-US",
+    speed: Annotated[float, Parameter.AudioSpeed(
+        description="Voice speed multiplier.",
+        min=0.25,
+        max=2.
+    )]=1.0
+) -> Annotated[ndarray, Parameter.Audio(
+    description="Linear PCM audio samples with shape (F,) and sample rate 24KHz.",
+    sample_rate=24_000
+)]:
     """
     Perform text-to-speech with Kitten TTS.
     """
