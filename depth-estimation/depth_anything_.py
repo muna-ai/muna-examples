@@ -8,12 +8,7 @@
 
 # /// script
 # requires-python = ">=3.11"
-# dependencies = [
-#     "huggingface_hub",
-#     "muna",
-#     "opencv-python-headless",
-#     "torchvision"
-# ]
+# dependencies = ["huggingface_hub", "muna", "opencv-python-headless", "torchvision"]
 # ///
 
 from cv2 import applyColorMap, cvtColor, COLOR_BGR2RGB, COLORMAP_INFERNO
