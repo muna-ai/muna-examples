@@ -5,12 +5,7 @@
 
 # /// script
 # requires-python = ">=3.11"
-# dependencies = [
-#     "muna",
-#     "rfdetr",
-#     "rich",
-#     "torchvision"
-# ]
+# dependencies = ["muna", "rfdetr", "rich", "torchvision"]
 # ///
 
 from muna import compile, Parameter, Sandbox
@@ -95,16 +90,8 @@ def detect_objects(
     scores = scores[confidence_mask]
     labels = flat_indices % logits.shape[2]
     # Apply NMS
-    boxes_xyxy = box_convert(
-        boxes,
-        in_fmt="cxcywh",
-        out_fmt="xyxy"
-    )
-    keep_indices = nms(
-        boxes_xyxy,
-        scores=scores,
-        iou_threshold=max_iou
-    )
+    boxes_xyxy = box_convert(boxes, in_fmt="cxcywh", out_fmt="xyxy")
+    keep_indices = nms(boxes_xyxy, scores=scores, iou_threshold=max_iou)
     boxes = boxes_xyxy[keep_indices]
     scores = scores[keep_indices]
     labels = labels[keep_indices]
@@ -129,12 +116,8 @@ def _visualize_detections(
     """
     image = image.convert("RGB")
     image_tensor = F.to_tensor(image)
-    boxes = tensor([[
-        detection.x_min * image.width,
-        detection.y_min * image.height,
-        detection.x_max * image.width,
-        detection.y_max * image.height
-    ] for detection in detections])
+    boxes = tensor([[det.x_min, det.y_min, det.x_max, det.y_max] for det in detections])
+    boxes *= tensor([image.width, image.height]).repeat(2)
     labels = [detection.label for detection in detections]
     result_tensor = draw_bounding_boxes(
         image_tensor,
@@ -153,7 +136,6 @@ if __name__ == "__main__":
     image_path = Path(__file__).parent / "demo" / "vehicles.jpg"
     image = Image.open(image_path)
     detections = detect_objects(image)
-    # Print detections
+    # Visualize
     print_json(data=[det.model_dump() for det in detections])
-    # Annotate image and show
     _visualize_detections(image, detections).show()
