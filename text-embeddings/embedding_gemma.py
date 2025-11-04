@@ -5,13 +5,7 @@
 
 # /// script
 # requires-python = ">=3.11"
-# dependencies = [
-#     "huggingface_hub",
-#     "muna",
-#     "onnx",
-#     "onnxruntime",
-#     "transformers"
-# ]
+# dependencies = ["huggingface_hub", "muna", "onnx", "onnxruntime", "transformers"]
 # ///
 
 from huggingface_hub import hf_hub_download
@@ -72,18 +66,9 @@ tokenizer = AutoTokenizer.from_pretrained(model_id)
     ]
 )
 def compute_embeddings(
-    texts: Annotated[
-        list[str],
-        Parameter.Generic(description="Input texts to embed.")
-    ],
-    task: Annotated[
-        TaskType,
-        Parameter.Generic(description="Embedding task type.")
-    ] = "document"
-) -> Annotated[
-    ndarray,
-    Parameter.Embedding(description="Embedding matrix with shape (N,768).")
-]:
+    texts: Annotated[list[str], Parameter.Generic(description="Input texts to embed.")],
+    task: Annotated[TaskType, Parameter.Generic(description="Embedding task type.")]="document"
+) -> Annotated[ndarray, Parameter.Embedding(description="Embedding matrix with shape (N,768).")]:
     """
     Create embedding vectors from text with EmbeddingGemma.
     """
@@ -93,14 +78,14 @@ def compute_embeddings(
     return embeddings
 
 if __name__ == "__main__":
-    query = ["Which planet is known as the Red Planet?"]
+    query = "Which planet is known as the Red Planet?"
     documents = [
         "Saturn, famous for its rings, is sometimes mistaken for the Red Planet.",
         "Venus is often called Earth's twin because of its similar size and proximity.",
         "Jupiter, the largest planet in our solar system, has a prominent red spot.",
         "Mars, known for its reddish appearance, is often referred to as the Red Planet.",
     ]
-    query_embedding = compute_embeddings(query, task="search result")[0]
+    query_embedding: ndarray = compute_embeddings([query], task="search result")[0]
     document_embeddings = compute_embeddings(documents, task="document")
-    similarities: ndarray = query_embedding @ document_embeddings.T
+    similarities = query_embedding @ document_embeddings.T
     print(documents[similarities.argmax()])
