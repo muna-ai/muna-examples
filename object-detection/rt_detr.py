@@ -5,14 +5,7 @@
 
 # /// script
 # requires-python = ">=3.11"
-# dependencies = [
-#     "faster_coco_eval",
-#     "muna",
-#     "rich",
-#     "scipy",
-#     "tensorboard",
-#     "torchvision"
-# ]
+# dependencies = ["faster_coco_eval", "muna", "rich", "scipy", "tensorboard", "torchvision"]
 # ///
 
 from muna import compile, Parameter, Sandbox
@@ -116,22 +109,14 @@ def _visualize_detections(
     image = image.convert("RGB")
     image_tensor = F.to_tensor(image)
     # Convert detections to tensor format and denormalize
-    boxes_xyxy = tensor([[
-        detection.x_min * image.width,
-        detection.y_min * image.height,
-        detection.x_max * image.width,
-        detection.y_max * image.height
-    ] for detection in detections])
-    # Add confidence scores to labels
-    detection_labels = [
-        f"{detection.label}: {detection.confidence:.2f}"
-        for detection in detections
-    ]
+    boxes_xyxy = tensor([[det.x_min, det.y_min, det.x_max, det.y_max] for det in detections])
+    boxes_xyxy *= tensor(image.size).repeat(2)    
     # Draw bounding boxes with torchvision
+    labels = [f"{det.label}: {det.confidence:.2f}" for det in detections]
     result_tensor = draw_bounding_boxes(
         image_tensor,
         boxes=boxes_xyxy,
-        labels=detection_labels,
+        labels=labels,
         width=3,
         font="Arial",
         font_size=int(0.03 * image.width)

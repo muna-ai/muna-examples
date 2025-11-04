@@ -117,7 +117,7 @@ def _visualize_detections(
     image = image.convert("RGB")
     image_tensor = F.to_tensor(image)
     boxes = tensor([[det.x_min, det.y_min, det.x_max, det.y_max] for det in detections])
-    boxes *= tensor([image.width, image.height]).repeat(2)
+    boxes *= tensor(image.size).repeat(2)
     labels = [detection.label for detection in detections]
     result_tensor = draw_bounding_boxes(
         image_tensor,
