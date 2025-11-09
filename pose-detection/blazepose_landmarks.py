@@ -76,11 +76,12 @@ KEYPOINT_NAMES = [
 
 @compile(
     tag="@mediapipe/blazepose-landmarks-lite",
-    targets=["windows"],
     description="Infer the full body pose an from RoI with BlazePose Landmarks (lite).",
     sandbox=Sandbox()
         .pip_install("torch", "torchvision", index_url="https://download.pytorch.org/whl/cpu")
         .pip_install("opencv-python-headless", "tensorflow"),
+    targets=["arm64-apple-ios", "arm64-apple-darwin", "x86_64-pc-windows-msvc"],
+    access="unlisted",
     metadata=[
         LiteRTInterpreterMetadata(interpreter=interpreter, model_path=model_path),
     ]

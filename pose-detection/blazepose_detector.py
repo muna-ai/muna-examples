@@ -167,6 +167,8 @@ ANCHORS = _generate_ssd_anchors(**{
     sandbox=Sandbox()
         .pip_install("torch", "torchvision", index_url="https://download.pytorch.org/whl/cpu")
         .pip_install("tensorflow"),
+    targets=["arm64-apple-ios", "arm64-apple-darwin", "x86_64-pc-windows-msvc"],
+    access="unlisted",
     metadata=[
         LiteRTInterpreterMetadata(interpreter=interpreter, model_path=model_path),
     ]
