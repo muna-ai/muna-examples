@@ -244,7 +244,8 @@ if __name__ == "__main__":
     from pydantic import TypeAdapter
     from rich import print_json
     # Infer full body pose
-    image = Image.open("test/media/runner_2.jpg")
+    image_path = Path(__file__).parent / "demo" / "runner.jpg"
+    image = Image.open(image_path)
     roi = RotatedRect(
         x_center=0.6124255061149597,
         y_center=0.520103394985199,

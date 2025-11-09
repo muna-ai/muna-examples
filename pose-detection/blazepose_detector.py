@@ -337,7 +337,8 @@ if __name__ == "__main__":
     from pydantic import TypeAdapter
     from rich import print_json    
     # Detect poses
-    image = Image.open("test/media/runner_2.jpg")
+    image_path = Path(__file__).parent / "demo" / "runner.jpg"
+    image = Image.open(image_path)
     poses = detect_poses(image, min_confidence=0.5, max_iou=0.1)
     # Visualize
     print_json(data=TypeAdapter(list[PoseDetection]).dump_python(poses))
