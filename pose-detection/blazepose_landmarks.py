@@ -94,6 +94,7 @@ def infer_full_body_pose(
     Infer the full body pose an from RoI with BlazePose Landmarks (lite).
     """
     # Create ROI image
+    image = image.convert("RGB")
     roi_image = _create_roi_image(image, roi)
     roi_tensor = array(roi_image).astype("float32") / 255
     # Run model
