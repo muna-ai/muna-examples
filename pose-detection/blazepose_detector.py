@@ -9,7 +9,7 @@
 # ///
 
 from muna import compile, Parameter, Sandbox
-from muna.beta import LiteRTInterpreterMetadata
+from muna.beta import TFLiteInterpreterMetadata
 from numpy import array, ceil, ndarray, sqrt
 from pathlib import Path
 from PIL import Image
@@ -170,7 +170,7 @@ ANCHORS = _generate_ssd_anchors(**{
     targets=["arm64-apple-ios", "arm64-apple-darwin", "x86_64-pc-windows-msvc"],
     access="unlisted",
     metadata=[
-        LiteRTInterpreterMetadata(interpreter=interpreter, model_path=model_path),
+        TFLiteInterpreterMetadata(interpreter=interpreter, model_path=model_path),
     ]
 )
 def detect_poses(

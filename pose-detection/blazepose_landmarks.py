@@ -10,7 +10,7 @@
 
 from cv2 import getRectSubPix, getRotationMatrix2D, warpAffine, BORDER_CONSTANT, INTER_LINEAR
 from muna import Parameter, Sandbox, compile
-from muna.beta import LiteRTInterpreterMetadata
+from muna.beta import TFLiteInterpreterMetadata
 from numpy import array
 from pathlib import Path
 from PIL import Image
@@ -83,7 +83,7 @@ KEYPOINT_NAMES = [
     targets=["arm64-apple-ios", "arm64-apple-darwin", "x86_64-pc-windows-msvc"],
     access="unlisted",
     metadata=[
-        LiteRTInterpreterMetadata(interpreter=interpreter, model_path=model_path),
+        TFLiteInterpreterMetadata(interpreter=interpreter, model_path=model_path),
     ]
 )
 def infer_full_body_pose(
