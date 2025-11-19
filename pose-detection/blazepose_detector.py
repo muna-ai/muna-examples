@@ -162,7 +162,7 @@ ANCHORS = _generate_ssd_anchors(**{
 })
 
 @compile(
-    tag="@mediapipe/blazepose-detector-lite",
+    tag="@anon/blazepose-detector-lite",
     description="Detect pose ROIs in an image with BlazePose Detector (lite).",
     sandbox=Sandbox()
         .pip_install("torch", "torchvision", index_url="https://download.pytorch.org/whl/cpu")

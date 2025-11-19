@@ -25,7 +25,7 @@ from pathlib import Path
 from PIL import Image
 import sys
 from torch import inference_mode, load as torch_load, randn
-from torch.export import Dim
+from torch.nn.functional import interpolate
 from torchvision.transforms import functional as F
 from typing import Annotated
 
@@ -54,8 +54,7 @@ model.eval()
     metadata=[
         OnnxRuntimeInferenceMetadata(
             model=model,
-            model_args=[randn(1, 3, 224, 224)],
-            input_shapes=[(1, 3, 14 * Dim("height_quotient"), 14 * Dim("width_quotient"))]
+            model_args=[randn(1, 3, 518, 518)]
         )
     ]
 )
@@ -66,15 +65,20 @@ def estimate_depth(
     """
     Estimate metric depth from an image with Depth Anything V2 (small).
     """
-    # Preprocess
-    src_width, src_height = image.size
-    dst_width, dst_height = _get_resize_dimensions(
-        image,
-        smaller_side_length=518,
-        ensure_multiple_of=14
-    )
+    # Save original dimensions for resizing output back
+    original_w, original_h = image.size
+    # Model expects 518x518 input
+    MODEL_SIZE = 518
+    # Compute scaled size and padding
+    ratio = min(MODEL_SIZE / original_w, MODEL_SIZE / original_h)
+    scaled_width = int(original_w * ratio)
+    scaled_height = int(original_h * ratio)
+    image_padding = [0, 0, MODEL_SIZE - scaled_width, MODEL_SIZE - scaled_height]
+    # Downscale and pad image
     image = image.convert("RGB")
-    image = F.resize(image, (dst_height, dst_width))
+    image = F.resize(image, [scaled_height, scaled_width])
+    image = F.pad(image, image_padding, fill=0)
+    # Convert to tensor and normalize with ImageNet stats
     image_tensor = F.to_tensor(image)
     normalized_tensor = F.normalize(
         image_tensor,
@@ -82,37 +86,22 @@ def estimate_depth(
         std=[0.229, 0.224, 0.225]
     )
     # Predict depth
-    depth_batch = model(normalized_tensor[None])
-    # Upsample depth
-    depth_batch = F.resize(depth_batch, (src_height, src_width))
-    depth = depth_batch[0].numpy()
+    depth_tensor = model(normalized_tensor[None])
+    # depth_tensor has shape (1, H, W)
+    depth_tensor = depth_tensor[0]  # Remove batch dim -> (H, W)
+    # Crop out the padding from the depth map
+    depth_tensor = depth_tensor[:scaled_height, :scaled_width]
+    # Resize depth map back to original image dimensions
+    depth_resized = interpolate(
+        depth_tensor.unsqueeze(0).unsqueeze(0),  # Add batch and channel dims -> (1, 1, H, W)
+        (original_h, original_w),  # size
+        None,  # scale_factor
+        'bilinear',  # mode
+        False  # align_corners
+    )
+    depth = depth_resized.squeeze(0).squeeze(0).cpu().numpy()  # Remove extra dims -> (H, W)
     # Return
     return depth
-
-def _get_resize_dimensions(
-    image: Image.Image,
-    *,
-    smaller_side_length: int=518,
-    ensure_multiple_of: int=14
-) -> tuple[int, int]:
-    """
-    Calculate target dimensions while maintaining aspect ratio using a default
-    minimum of 518. Dimensions must be evenly divisible by 14.
-    """
-    # Aspect scale
-    src_width, src_height = image.size
-    aspect_ratio = src_width / src_height
-    if src_width <= src_height:
-        dst_width = smaller_side_length
-        dst_height = int(smaller_side_length / aspect_ratio)
-    else:
-        dst_height = smaller_side_length
-        dst_width = int(smaller_side_length * aspect_ratio)
-    # Enforce multiple both dimensions
-    dst_width = (dst_width // ensure_multiple_of) * ensure_multiple_of
-    dst_height = (dst_height // ensure_multiple_of) * ensure_multiple_of
-    # Return
-    return dst_width, dst_height
 
 def _visualize_depth(depth: ndarray) -> Image.Image:
     """
