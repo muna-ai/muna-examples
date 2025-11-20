@@ -34,7 +34,7 @@ model = DepthAnything.from_pretrained(
 ).eval()
 
 @compile(
-    tag="@tiktok/depth-anything-large",
+    tag="@bytedance/depth-anything-large",
     description="Estimate metric depth from an image using Depth Anything (large).",
     access="public",
     sandbox=Sandbox()

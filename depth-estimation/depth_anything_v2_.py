@@ -44,7 +44,7 @@ model.load_state_dict(weights)
 model.eval()
 
 @compile(
-    tag="@tiktok/depth-anything-v2-small",
+    tag="@bytedance/depth-anything-v2-small",
     description="Estimate metric depth from an image with Depth Anything V2 (small).",
     access="public",
     sandbox=Sandbox()
