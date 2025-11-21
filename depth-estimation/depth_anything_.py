@@ -34,9 +34,9 @@ model = DepthAnything.from_pretrained(
 INPUT_SIZE = 518
 
 @compile(
-    tag="@yusuf/depth-anything-large",
+    tag="@bytedance/depth-anything-large",
     description="Estimate metric depth from an image using Depth Anything (large).",
-    #access="public",
+    access="public",
     sandbox=Sandbox()
         .pip_install("torch", "torchvision", index_url="https://download.pytorch.org/whl/cpu")
         .pip_install("huggingface_hub", "opencv-python-headless")
