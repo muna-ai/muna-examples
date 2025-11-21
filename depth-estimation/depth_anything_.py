@@ -11,7 +11,6 @@
 # dependencies = ["huggingface_hub", "muna", "opencv-python-headless", "torchvision"]
 # ///
 
-from cv2 import applyColorMap, cvtColor, COLOR_BGR2RGB, COLORMAP_INFERNO
 from muna import compile, Parameter, Sandbox
 from muna.beta import OnnxRuntimeInferenceMetadata
 from numpy import ndarray, uint8
@@ -32,11 +31,12 @@ model = DepthAnything.from_pretrained(
     "LiheYoung/depth_anything_vitl14",
     config={ "localhub": False }
 ).eval()
+INPUT_SIZE = 518
 
 @compile(
-    tag="@bytedance/depth-anything-large",
+    tag="@yusuf/depth-anything-large",
     description="Estimate metric depth from an image using Depth Anything (large).",
-    access="public",
+    #access="public",
     sandbox=Sandbox()
         .pip_install("torch", "torchvision", index_url="https://download.pytorch.org/whl/cpu")
         .pip_install("huggingface_hub", "opencv-python-headless")
@@ -44,7 +44,7 @@ model = DepthAnything.from_pretrained(
     metadata=[
         OnnxRuntimeInferenceMetadata(
             model=model,
-            model_args=[randn(1, 3, 518, 518)],
+            model_args=[randn(1, 3, INPUT_SIZE, INPUT_SIZE)],
         )
     ]
 )
@@ -55,41 +55,32 @@ def estimate_depth(
     """
     Estimate metric depth from an image using Depth Anything (large).
     """
-    # Save original dimensions for resizing output back
-    original_w, original_h = image.size
-    # Model expects 518x518 input
-    MODEL_SIZE = 518
-    # Compute scaled size and padding
-    ratio = min(MODEL_SIZE / original_w, MODEL_SIZE / original_h)
-    scaled_width = int(original_w * ratio)
-    scaled_height = int(original_h * ratio)
-    image_padding = [0, 0, MODEL_SIZE - scaled_width, MODEL_SIZE - scaled_height]
-    # Downscale and pad image
-    image = image.convert("RGB")
+    # Resize image
+    width, height = image.size
+    ratio = min(INPUT_SIZE / width, INPUT_SIZE / height)
+    scaled_width = int(width * ratio)
+    scaled_height = int(height * ratio)
     image = F.resize(image, [scaled_height, scaled_width])
-    image = F.pad(image, image_padding, fill=0)
-    # Convert to tensor and normalize with ImageNet stats
+    # Pad image to square
+    padding = (0, 0, INPUT_SIZE - scaled_width, INPUT_SIZE - scaled_height)
+    image = image.convert("RGB")
+    image = F.pad(image, padding, fill=0)
+    # Convert to tensor and normalize
     image_tensor = F.to_tensor(image)
     normalized_tensor = F.normalize(
         image_tensor,
         mean=[0.485, 0.456, 0.406],
         std=[0.229, 0.224, 0.225]
     )
-    # Predict depth
+    # Run model
     depth_tensor = model(normalized_tensor[None])
-    # depth_tensor has shape (1, H, W)
-    depth_tensor = depth_tensor[0]  # Remove batch dim -> (H, W)
-    # Crop out the padding from the depth map
-    depth_tensor = depth_tensor[:scaled_height, :scaled_width]
-    # Resize depth map back to original image dimensions
+    # Upsample depth map
     depth_resized = interpolate(
-        depth_tensor.unsqueeze(0).unsqueeze(0),  # Add batch and channel dims -> (1, 1, H, W)
-        (original_h, original_w),  # size
-        None,  # scale_factor
-        'bilinear',  # mode
-        False  # align_corners
+        depth_tensor[None,:,:scaled_height,:scaled_width],  # remove padding
+        size=(height, width),
+        mode="bilinear"
     )
-    depth = depth_resized.squeeze(0).squeeze(0).cpu().numpy()  # Remove extra dims -> (H, W)
+    depth = depth_resized[0,0].cpu().numpy() # (H,W)
     # Return
     return depth
 
@@ -97,6 +88,7 @@ def _visualize_depth(depth: ndarray) -> Image.Image:
     """
     Colorize a depth array using OpenCV's COLORMAP_INFERNO heatmap.
     """
+    from cv2 import applyColorMap, cvtColor, COLOR_BGR2RGB, COLORMAP_INFERNO
     depth_range = depth.max() - depth.min()
     depth_normalized = (depth - depth.min()) / depth_range
     depth_uint8 = (depth_normalized * 255).astype(uint8)
