@@ -20,17 +20,46 @@
 # ]
 # ///
 
+from contextlib import contextmanager
 from huggingface_hub import hf_hub_download
 from muna import compile, Parameter, Sandbox
-from muna.beta import OnnxRuntimeInferenceMetadata
+from muna.beta import CoreMLInferenceMetadata, OnnxRuntimeInferenceMetadata
 from numpy import ndarray, uint8
 from pathlib import Path
 from PIL import Image
 from safetensors.torch import load_file
 from torch import inference_mode, randn
-from torch.nn.functional import interpolate
+from torch.nn import Module
+from torch.nn.functional import upsample
 from torchvision.transforms import functional as F
 from typing import Annotated
+
+# Depth Anything uses bicubic interpolation to compute positional encodings.
+# This interpolation mode is not supported by several inference backends (ORT, CoreML, etc).
+# This context manager overrides the interpolation mode to use bilinear instead.
+@contextmanager
+def force_bilinear_interpolate():
+    from torch.nn import functional as F
+    original_interpolate = F.interpolate  # keep reference to the real function
+    def wrapped_interpolate(*args, **kwargs):
+        if kwargs.get("mode") == "bicubic":
+            kwargs["mode"] = "bilinear"
+        return original_interpolate(*args, **kwargs)
+    F.interpolate = wrapped_interpolate
+    try:
+        yield
+    finally:
+        F.interpolate = original_interpolate
+
+# Wrapper to get only the depth output from the model
+class _GetDepthWrapper(Module):
+
+    def __init__(self, model):
+        super().__init__()
+        self.model = model
+
+    def forward(self, inputs):
+        return self.model(inputs)["depth"]
 
 # Import Depth Anything V3 Components
 import sys
@@ -62,13 +91,20 @@ weights_path = hf_hub_download(
     repo_id="depth-anything/DA3METRIC-LARGE",
     filename="model.safetensors"
 )
-model.load_state_dict({k.replace("model.", ""): v for k, v in load_file(weights_path).items()})
+model.load_state_dict({ k.replace("model.", ""): v for k, v in load_file(weights_path).items() })
 model.eval()
 
+# Wrap model and force bilinear interpolation
+model = _GetDepthWrapper(model)
+bilinear_ctx = force_bilinear_interpolate()
+bilinear_ctx.__enter__()
+example_input = randn(1, 1, 3, INPUT_SIZE, INPUT_SIZE)
+
 @compile(
-    tag="@bytedance/depth-anything-v3-metric-large",
+    tag="@yusuf/depth-anything-v3-metric-large-coreml",
     description="Estimate metric depth from a monocular image with Depth Anything V3 (metric large).",
     access="public",
+    targets=["ios", "macos"],
     sandbox=Sandbox()
         .pip_install("torch", "torchvision", index_url="https://download.pytorch.org/whl/cpu")
         .pip_install("addict", "einops", "huggingface_hub", "omegaconf", "opencv-python-headless",  "safetensors")
@@ -76,10 +112,14 @@ model.eval()
     metadata=[
         OnnxRuntimeInferenceMetadata(
             model=model,
+            model_args=[example_input],
             exporter="none",
-            model_args=[randn(1, 1, 3, INPUT_SIZE, INPUT_SIZE)],
-            output_keys=["depth", "sky"],
             optimization="basic"
+        ),
+        CoreMLInferenceMetadata(
+            model=model,
+            model_args=[example_input],
+            exporter="none"
         )
     ]
 )
@@ -108,10 +148,9 @@ def estimate_depth(
         std=[0.229, 0.224, 0.225]
     )
     # Run model forward pass and extract depth tensor
-    model_output = model(img_tensor[None, None]) # model takes (1, 1, 3, H, W)
-    depth_output = model_output["depth"]
+    depth_output = model(img_tensor[None, None]) # model takes (1, 1, 3, H, W)
     # Upsample depth map
-    depth_resized = interpolate(
+    depth_resized = upsample(
         depth_output[:,:,:scaled_height, :scaled_width], # Remove padding
         size=(height, width),
         mode="bilinear"
